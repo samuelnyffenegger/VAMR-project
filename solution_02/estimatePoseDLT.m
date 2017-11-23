@@ -1,14 +1,15 @@
 function M = estimatePoseDLT(p, P, K)
+% M = estimatePoseDLT(p, P, K);
 % Estimates the pose of a camera using a set of 2D-3D correspondences and a
 % given camera matrix
-%
-% p: [nx2] vector containing the undistorted coordinates of the 2D points
-% P: [nx3] vector containing the 3D point positions
-% K: [3x3] camera matrix
-%
-% M: [3x4] projection matrix under the form M=[R|t] where R is a rotation
-%    matrix. M encodes the transformation that maps points from the world
-%    frame to the camera frame
+% Input:
+%   p, nx2 vector containing the undistorted coordinates of the 2D points
+%   P, nx3 vector containing the 3D point positions
+%   K, 3x3 camera matrix
+% Output:
+%   M, 3x4 projection matrix under the form M=[R|t] where R is a rotation
+%   matrix. M encodes the transformation that maps points from the world
+%   frame to the camera frame
 
 % Convert 2D points to normalized coordinates
 p_normalized = (K \ [p ones(length(p),1)]')';

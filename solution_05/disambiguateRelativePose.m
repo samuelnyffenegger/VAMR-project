@@ -3,7 +3,7 @@ function [R,T] = disambiguateRelativePose(Rots,u3,points0_h,points1_h,K0,K1)
 % four possible configurations) by returning the one that yields points
 % lying in front of the image plane (with positive depth).
 %
-% Arguments:
+% Input:
 %   Rots -  3x3x2: the two possible rotations returned by decomposeEssentialMatrix
 %   u3   -  a 3x1 vector with the translation information returned by decomposeEssentialMatrix
 %   p1   -  3xN homogeneous coordinates of point correspondences in image 1
@@ -11,7 +11,7 @@ function [R,T] = disambiguateRelativePose(Rots,u3,points0_h,points1_h,K0,K1)
 %   K1   -  3x3 calibration matrix for camera 1
 %   K2   -  3x3 calibration matrix for camera 2
 %
-% Returns:
+% Output:
 %   R -  3x3 the correct rotation matrix
 %   T -  3x1 the correct translation vector
 %

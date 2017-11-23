@@ -1,5 +1,15 @@
 function undistorted_img = undistortImage(img, K, D, bilinear_interpolation)
-% Corrects an image for lens distortion.
+% undistorted_img = undistortImage(img, K, D);
+% undistorted_img = undistortImage(img, K, D, bilinear_interpolation);
+% Corrects an image for lens distortion
+% Input:
+%   img, distorted image
+%   K, 3x3 camera matrix
+%   D, 2x1 distortion matrix
+%   billear_interpolation = {0,1}, 1:billinear interpolation, 0:nearest
+%   neighbour
+% Output:
+%   undistorted_img, undistorted image
 
 if nargin < 4
     bilinear_interpolation = 0;

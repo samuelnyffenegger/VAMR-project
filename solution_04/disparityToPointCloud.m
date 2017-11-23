@@ -1,9 +1,19 @@
 function [points, intensities] = disparityToPointCloud(...
     disp_img, K, baseline, left_img)
+% [points, intensities] = disparityToPointCloud(disp_img, K, baseline, left_img);
 % points should be 3xN and intensities 1xN, where N is the amount of pixels
 % which have a valid disparity. I.e., only return points and intensities
 % for pixels of left_img which have a valid disparity estimate! The i-th
 % intensity should correspond to the i-th point.
+% Input:
+%   disp_img, size(left_img) disparity 
+%   K, 3x3, camera matri (for both cameras)
+%   baseline, scalar distance between rectified cameras
+%   left_img, left image
+% Output:
+%   points, 3xN, 3d points
+%   intensities, 1xN corresponding grayscale of left image
+
 
 % Convenient way to build per-pixel coordinates.
 [X,Y] = meshgrid(1:size(disp_img,2),1:size(disp_img,1));

@@ -1,4 +1,6 @@
 function undimg = undistortImageVectorized(img, K, D)
+% tba!
+
   [X, Y] = meshgrid(1:size(img, 2), 1:size(img, 1));
   px_locs = [X(:)-1, Y(:)-1, ones(nnz(X), 1)]';
   

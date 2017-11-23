@@ -1,10 +1,19 @@
 function disp_img = getDisparity(...
     left_img, right_img, patch_radius, min_disp, max_disp)
+% disp_img = getDisparity(left_img, right_img, patch_radius, min_disp, max_disp);
 % left_img and right_img are both H x W and you should return a H x W
 % matrix containing the disparity d for each pixel of left_img. Set
 % disp_img to 0 for pixels where the SSD and/or d is not defined, and for d
 % estimates rejected in Part 2. patch_radius specifies the SSD patch and
 % each valid d should satisfy min_disp <= d <= max_disp.
+% Imput:
+%   left_img, left image (rectified, same K)
+%   right_img, right image
+%   patch_radius, length of square for matching along horizontal epipolar line
+%   min_disp, minimum disparity --> defines maximum depth
+%   max_disp, maximum disparity --> defines closest detectable point
+% Output:
+%   disp_img, size(left_img), disparity: pixel difference
 
 r = patch_radius;
 patch_size = 2 * patch_radius + 1;

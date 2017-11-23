@@ -1,5 +1,12 @@
 function x_d = distortPoints(x, D)
-% Applies lens distortion D(2x1) to 2D points x(2xN) on the image plane.
+% x_d = distortPoints(x, D); 
+% Applies lens distortion to 2D points x on the image plane.
+% Input:
+%   x, 2xN undistorted points
+%   D, 2x1 distortion vector
+% Output:
+%   x_d, 2xN distorted points
+
 
 k1 = D(1); k2 = D(2);
 

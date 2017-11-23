@@ -1,4 +1,10 @@
 function plotMatches(matches, query_keypoints, database_keypoints)
+% plotMatches(matches, query_keypoints, database_keypoints);
+% plots green line between matches
+% Input:
+%   matches, 1xQ
+%   query_keypoints, MxQ
+%   database_keypoints, MxD
 
 [~, query_indices, match_indices] = find(matches);
 

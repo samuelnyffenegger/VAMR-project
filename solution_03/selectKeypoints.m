@@ -1,6 +1,13 @@
 function keypoints = selectKeypoints(scores, num, r)
+% keypoints = selectKeypoints(scores, num, r); 
 % Selects the num best scores as keypoints and performs non-maximum 
 % supression of a (2r + 1)*(2r + 1) box around the current maximum.
+% Input:
+%   scores, size(img)
+%   num, scalar number of best scores where a non-maxima supression is executed
+%   r, scalar "radius" of supression square
+% Output:
+%   keypoints, 2xnum, coorinates of keypoint
 
 keypoints = zeros(2, num);
 temp_scores = padarray(scores, [r r]);

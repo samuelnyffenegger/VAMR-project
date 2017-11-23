@@ -1,6 +1,14 @@
-function [projected_points] = projectPoints(points_3d, K, D)
+function projected_points = projectPoints(points_3d, K, D)
+% projected_points = projectPoints(points_3d, K);
+% projected_points = projectPoints(points_3d, K, D);
 % Projects 3d points to the image plane (3xN), given the camera matrix (3x3) and
-% distortion coefficients (4x1).
+% distortion coefficients (2x1).
+% Input:
+%   points_3d, 3xN real worl points
+%   K, 3x3 camera matrix
+%   D, 2x1 distortion matrix (optional)
+% Output:
+%   projected_points, 2xN pixel coordinates
 
 % if distortion vector D is missing, assume zero distortion
 if nargin <= 2

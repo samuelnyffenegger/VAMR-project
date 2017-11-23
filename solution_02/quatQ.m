@@ -1,4 +1,5 @@
-function [ Q, Q_bar ] = quatQ( q )
+function [Q, Q_bar] = quatQ(q)
+% tba
 
 Q = [ q(1) -q(2) -q(3) -q(4);
       q(2)  q(1) -q(4)  q(3);

@@ -1,5 +1,13 @@
 function scores = harris(img, patch_size, kappa)
-%% 
+% scores = harris(img, patch_size, kappa);
+% computes the harris score (indicades gradient) on image, zero BC
+% Input:
+%   img, image
+%   patch_size, scalar, patch_size = 2*patch_radius + 1
+%   kappa, R_uv = det(M_uv) - kappa*tr(M_uv)^2, (0.08)
+% Output:
+%   scores, size(img)
+
 sobel_para = [-1 0 1];
 sobel_orth = [1 2 1];
 

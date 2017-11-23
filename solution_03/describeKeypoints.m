@@ -1,7 +1,14 @@
 function descriptors = describeKeypoints(img, keypoints, r)
+% descriptors = describeKeypoints(img, keypoints, r);
 % Returns a (2r+1)^2xN matrix of image patch vectors based on image
 % img and a 2xN matrix containing the keypoint coordinates.
 % r is the patch "radius".
+% Input:
+%   img, image
+%   keypoints, 2xN
+%   r, scalar patch radius
+% Output:
+%   descriptors, (2r+1)^2xN
 
 N = size(keypoints, 2);
 descriptors = uint8(zeros((2*r+1) ^ 2, N));

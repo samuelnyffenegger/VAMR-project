@@ -1,5 +1,5 @@
 function plotTrajectory3D(fps, transl,quats, pts3d)
-
+% plotTrajectory3D(fps, transl,quats, pts3d);
 % PLOTTRAJECTORY3D Given the (timestamped) poses from optitrack (time, translations, quaternions),
 % draw the trajectory of the camera (3 colored axes, RGB).
 %

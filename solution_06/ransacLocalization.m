@@ -1,11 +1,27 @@
 function [R_C_W, t_C_W, query_keypoints, all_matches, best_inlier_mask, ...
     max_num_inliers_history] = ransacLocalization(...
     query_image, database_image, database_keypoints, p_W_landmarks, K)
+% [R_C_W, t_C_W, query_keypoints, all_matches, best_inlier_mask, ...
+%    max_num_inliers_history] = ransacLocalization(...
+%    query_image, database_image, database_keypoints, p_W_landmarks, K);
 % query_keypoints should be 2x1000
 % all_matches should be 1x1000 and correspond to the output from the
 %   matchDescriptors() function from exercise 3.
 % best_inlier_mask should be 1xnum_matched (!!!) and contain, only for the
 %   matched keypoints (!!!), 0 if the match is an outlier, 1 otherwise.
+% Input:
+%   query_image, image @k
+%   database_image, image @k-1
+%   database_keypoints, 2xD
+%   p_W_landmarks, 3xD, landmarks in real word coordinate frame
+%   K, 3x3 camera matrix
+% Output:
+%   R_C_W, 3x3 rotation matrix W-->C, calculated with all inliers
+%   t_C_W, 3x1 transformation vector W-->C, calculated with all inliers
+%   query_keypoints, 2xQ, 
+%   all_matches, 1xQ, index of matched database image j at position i
+%   best_inlier_mask, 1xM, 1 if matched, 0 otherwise, M = num_matched
+%   max_num_inliers_history, 1xK, K = num_keypoints
 
 use_p3p = true;
 tweaked_for_more = true;

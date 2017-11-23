@@ -1,6 +1,11 @@
-function [R] = quat2RotMatrix(q)
+function R = quat2RotMatrix(q)
+% R = quat2RotMatrix(q)
 % Transforms a quaternion q into a rotation matrix.
 % A quaternion is defined as q = [qw qx qy qz]' where qw is the real part.
+% Input:
+%   q, 4x1 quaternion
+% Output:
+%   R, 3x3 rotation matrix
 
 [ Q, Q_bar ]= quatQ(q);
 

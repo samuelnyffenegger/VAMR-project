@@ -1,5 +1,6 @@
 function matches = matchDescriptors(...
     query_descriptors, database_descriptors, lambda)
+% matches = matchDescriptors(query_descriptors, database_descriptors, lambda)
 % Returns a 1xQ matrix where the i-th coefficient is the index of the
 % database descriptor which matches to the i-th query descriptor.
 % The descriptor vectors are MxQ and MxD where M is the descriptor
@@ -7,6 +8,12 @@ function matches = matchDescriptors(...
 % respectively. matches(i) will be zero if there is no database descriptor
 % with an SSD < lambda * min(SSD). No two non-zero elements of matches will
 % be equal.
+% Input: 
+%   query_descriptors, MxQ
+%   database_descriptors, MxD
+%   lambda, scalar (4)
+% Output:
+%   matches, 1xQ, contains index of database image, maximum entry is D
 
 [dists,matches] = pdist2(double(database_descriptors)', ...
     double(query_descriptors)', 'euclidean', 'Smallest', 1);
