@@ -1,11 +1,17 @@
-clear all; close all; clc;
+%%  Vision Algorithm for Mobile Robots
+%   Visual odometry pipeline
+%   Samuel Nyffenegger, Sebastian Ratz
+%   Nov 2017 - Jan 2018
 
 %% Setup
+clear all; close all; clc;
+addpath(genpath(cd));
+
 ds = 0; % 0: KITTI, 1: Malaga, 2: parking
 
+path_to_main = fileparts(which('main.m')); 
 if ds == 0
-    % need to set kitti_path to folder containing "00" and "poses"
-    kitti_path = '~/Documents/MATLAB/VAMR/mini_project/kitti';
+    kitti_path = [path_to_main,'/../data/kitti'];
     assert(exist('kitti_path', 'var') ~= 0);
     ground_truth = load([kitti_path '/poses/00.txt']);
     ground_truth = ground_truth(:, [end-8 end]);
@@ -14,8 +20,7 @@ if ds == 0
         0 7.188560000000e+02 1.852157000000e+02
         0 0 1];
 elseif ds == 1
-    % Path containing the many files of Malaga 7.
-    malaga_path = '~/Documents/MATLAB/VAMR/mini_project/malaga'; % TODO: check
+    malaga_path = [path_to_main,'/../data/malaga-urban-dataset-extract-07'];
     assert(exist('malaga_path', 'var') ~= 0);
     images = dir([malaga_path ...
         '/malaga-urban-dataset-extract-07_rectified_800x600_Images']);
@@ -25,8 +30,7 @@ elseif ds == 1
         0 621.18428 309.05989
         0 0 1];
 elseif ds == 2
-    % Path containing images, depths and all...
-    parking_path = '~/Documents/MATLAB/VAMR/mini_project/parking';
+    parking_path = [path_to_main,'/../data/parking'];
     assert(exist('parking_path', 'var') ~= 0);
     last_frame = 598;
     K = load([parking_path '/K.txt']);
@@ -38,7 +42,8 @@ else
 end
 
 %% Bootstrap
-% need to set bootstrap_frames
+bootstrap_frames = [1,3]; % suggested for Kitti: or [0,2]?
+
 if ds == 0
     img0 = imread([kitti_path '/00/image_0/' ...
         sprintf('%06d.png',bootstrap_frames(1))]);
