@@ -10,4 +10,11 @@ load stereoPointPairs
 % inlierPts2 = matchedPoints2(knownInliers,:);
 % fNorm8Point = estimateFundamentalMatrix(inlierPts1,inlierPts2,'Method','Norm8Point')
 
-
+%% indexing
+clc
+all_matches = [3,0,0,2,5]; 
+inliers_mask = [1,0,1];
+inliers_matches = all_matches(all_matches>0).*inliers_mask;
+all_inliers_mask = all_matches > 0;
+all_inliers_mask(all_inliers_mask>0) = inliers_matches;
+all_inliers_matches = all_matches.*all_inliers_mask;

@@ -11,13 +11,15 @@ X = randn(4,N);  % Homogeneous coordinates of 3-D points
 X(3, :) = X(3, :) * 5 + 10;
 X(4, :) = 1;
 
-P1 =   [500 0 320 0
-        0 500 240 0
-        0 0 1 0];
+K = [500 0 320 
+     0 500 240
+     0 0 1]; 
 
-P2 =   [500 0 320 -100
-        0 500 240 0
-        0 0 1 0];
+R1 = eye(3); t1 = zeros(3,1); 
+P1 =   K*[R1,t1]; % origing
+
+R2 = eye(3); t2 = [-0.2;0;0]; % 
+P2 =   K*[R2,t2];
 				
 x1 = P1 * X;     % Image (i.e., projected) points
 x2 = P2 * X;
@@ -52,9 +54,10 @@ fprintf('Geometric error: %f px\n\n', cost_dist_epi_line);
 % Estimate fundamental matrix
 % Call the 8-point algorithm on noisy inputs x1,x2
 F = fundamentalEightPoint(noisy_x1,noisy_x2)
-F_ = estimateFundamentalMatrix(noisy_x1_',noisy_x2_','Method','RANSAC',...
-    'NumTrials',2000,'DistanceThreshold',1e-4)
+[F_, inliers_mask, status] = estimateFundamentalMatrix(noisy_x1_',noisy_x2_','Method','RANSAC',...
+    'NumTrials',2000,'DistanceThreshold',1e-4); F_
 
+fprintf('n_inliers = %2i \n',num2str(nnz(inliers_mask)))
 
 % Check the epipolar constraint x2(i).' * F * x1(i) = 0 for all points i.
 cost_algebraic = [norm( sum(noisy_x2.*(F*noisy_x1)) ) / sqrt(N); ...
