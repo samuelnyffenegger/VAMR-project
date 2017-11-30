@@ -27,7 +27,7 @@ harris_kappa = 0.08;
 num_keypoints = 1000;
 nonmaximum_supression_radius = 8;
 descriptor_radius = 9;
-match_lambda = 6;
+match_lambda = 5;
 
 
 % bridge
@@ -67,14 +67,39 @@ if plot_all_matches
         plotMatches(all_matches, query_keypoints, database_keypoints, 2, 'g-')
 end
 
-%% compute essential matrix in RANSAC fashion
-matched_query_keypoints_homog = [matched_query_keypoints; ones(1,size(matched_query_keypoints,2))];
-matched_database_keypoints_homog = [matched_database_keypoints; ones(1,size(matched_database_keypoints,2))];
+% compute essential matrix in RANSAC fashion
+clc
 
-[R_C2_C1, t_C2_C1] = estimateProjectionRANSAC(matched_database_keypoints, ...
-    matched_query_keypoints, K, K)
+[R_C2_C1, t_C2_C1, E_C2_C1,best_inlier_mask, max_num_inliers_history] = ...
+    estimateProjectionRANSAC(matched_database_keypoints, matched_query_keypoints, K);
+R_C2_C1
+t_C2_C1
 
+% plot 
+figure(1); clf
+    subplot(3, 1, 1);
+        imshow(query_image);
+        hold on;
+        plot(query_keypoints(2, :), query_keypoints(1, :), 'rx', 'Linewidth', 2);
+        plotMatches(all_matches, query_keypoints, database_keypoints);
+        title('All keypoints and matches');
 
+    subplot(3, 1, 2);
+        imshow(query_image);
+        hold on;
+        plot(matched_query_keypoints(2, (1-best_inlier_mask)>0), ...
+            matched_query_keypoints(1, (1-best_inlier_mask)>0), 'rx', 'Linewidth', 2);
+        plot(matched_query_keypoints(2, (best_inlier_mask)>0), ...
+            matched_query_keypoints(1, (best_inlier_mask)>0), 'gx', 'Linewidth', 2);
+        plotMatches(matched_query_mask(best_inlier_mask>0), ...
+            matched_query_keypoints(:, best_inlier_mask>0), ...
+            database_keypoints);
+        hold off;
+        title('Inlier and outlier matches');
+
+    subplot(3, 1, 3);
+        plot(max_num_inliers_history);
+        title('Maximum inlier count over RANSAC iterations.');
                  
                  
                  

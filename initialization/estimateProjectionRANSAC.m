@@ -1,11 +1,13 @@
-function [R_C2_C1, t_C2_C1, E_C2_C1] = estimateProjectionRANSAC(matched_database_keypoints, ...
+function [R_C2_C1, t_C2_C1, E_C2_C1,best_inlier_mask, ...
+    max_num_inliers_history] = estimateProjectionRANSAC(matched_database_keypoints, ...
     matched_query_keypoints, K)
 % estimates the relative position and orientation giving keypoints on two
-% images, p1 corresponds to the first (query) image, where p2 corresponds
-% to the second (database) image. Outliers are removed in a RANSAC fashion
+% images, frame C1 corresponds to the first (query) image, where frame C2 
+% corresponds to the second (database) image. Outliers are removed in a 
+% RANSAC fashion
 % Input: 
-%   p1, 2xN coordinates of 2-D points in image 1, M1 = [I,0]_C1
-%   p2, 2xN coordinates of 2-D points in image 2
+%   matched_database_keypoints (C1), 2xN coordinates of 2-D points in image 1, M1 = [I,0]_C1
+%   matched_query_keypoints (C2), 2xN coordinates of 2-D points in image 2
 %   K, 3x3 calibration matrix
 % Output:
 %   R_C2_C1, rotaion matrix frame C1 in C2
@@ -16,7 +18,7 @@ function [R_C2_C1, t_C2_C1, E_C2_C1] = estimateProjectionRANSAC(matched_database
 
 % bridge
 try
-    % launched inside estimateEssentialMatrixRANSAC
+    % launched inside estimateEssentialMatrixRANSAC    
 catch
     % launched outside
 end
@@ -24,11 +26,11 @@ end
 %% warning('no RANSAC, all points taken')
 clc
 % control parameters
-plot_sample_keypoints = true; 
+plot_sample_keypoints = false;
 
 % parameters TODO: add those parameters to a central place
-n_iterations = 1000;
-pixel_tolerance = 10; 
+n_iterations = 50;
+pixel_tolerance = 2; 
 k = 8; 
 
 % Initialize RANSAC
@@ -41,7 +43,7 @@ max_num_inliers = 0;
 min_inlier_count = k; 
 
 % RANSAC looop
-for i = 1:1 %n_iterations
+for i = 1:n_iterations
     % randomly pick k points 
     [sample_database_keypoints, idx] = datasample(matched_database_keypoints, k, 2, 'Replace', false);
     sample_query_keypoints = matched_query_keypoints(:,idx);
@@ -68,6 +70,8 @@ for i = 1:1 %n_iterations
     % Triangulate a point cloud using the guess transformation (R,t)
     M_database = K * eye(3,4);
     M_query = K * [R_C2_C1_guess, t_C2_C1_guess];
+    matched_query_keypoints_homog = [matched_query_keypoints; ones(1,size(matched_query_keypoints,2))];
+    matched_database_keypoints_homog = [matched_database_keypoints; ones(1,size(matched_database_keypoints,2))];
     P_guess_C1 = linearTriangulation(matched_database_keypoints_homog, ...
         matched_query_keypoints_homog, M_database, M_query);
     
@@ -84,7 +88,7 @@ for i = 1:1 %n_iterations
 
     % RANSAC update
     if n_inliers > max_num_inliers && ...
-            nnz(is_inlier) >= min_inlier_count
+            n_inliers >= min_inlier_count
         max_num_inliers = n_inliers;        
         best_inlier_mask = inlier_mask;
     end
