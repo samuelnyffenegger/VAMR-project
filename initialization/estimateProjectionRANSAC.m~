@@ -1,0 +1,75 @@
+function [R_C2_C1, t_C2_C1, E_C2_C1] = estimateProjectionRANSAC(matched_database_keypoints, ...
+    matched_query_keypoints, K)
+% estimates the relative position and orientation giving keypoints on two
+% images, p1 corresponds to the first (query) image, where p2 corresponds
+% to the second (database) image. Outliers are removed in a RANSAC fashion
+% Input: 
+%   p1, 2xN coordinates of 2-D points in image 1, M1 = [I,0]_C1
+%   p2, 2xN coordinates of 2-D points in image 2
+%   K, 3x3 calibration matrix
+% Output:
+%   R_C2_C1, rotaion matrix frame C1 in C2
+%   t_C2_C1, translation vector frame C1 in C2
+%   E_C2_C1, 3x3 fundamental matrix
+
+%% calculations
+
+% bridge
+try
+    % launched inside estimateEssentialMatrixRANSAC
+catch
+    % launched outside
+end
+
+%% warning('no RANSAC, all points taken')
+clc
+
+% parameters
+n_iterations = 1000;
+pixel_tolerance = 10; 
+k = 8; 
+
+% Initialize RANSAC
+n_matched_keypoints = size(matched_database_keypoints,2);
+best_inlier_mask = zeros(1, n_matched_keypoints);
+% (row, col) to (u, v)
+% matched_query_keypoints = flipud(matched_query_keypoints);
+max_num_inliers_history = zeros(1, n_iterations);
+max_num_inliers = 0;
+
+% RANSAC looop
+for i = 1:1 %n_iterations
+    % randomly pick k points 
+    [sample_database_keypoints, idx] = datasample(matched_database_keypoints, k, 2, 'Replace', false);
+    sample_query_keypoints = matched_query_keypoints(:,idx);
+
+    
+    
+    
+end
+
+
+
+
+F = fundamentalEightPoint_normalized(p1, p2);
+E = K2'*F*K1;
+
+
+
+%% procedure
+
+% RANSAC loop
+% pick randomly 8 points
+% compute E
+% Compute Rots, u3
+% disambigue Rots
+% triangulate
+% reproject
+% RANSAC update
+
+
+%% dummy assignement
+if ~exist('R_C2_C1','var'); R_C2_C1 = eye(3); warning('dummy assignement R_C2_C1'); end
+if ~exist('t_C2_C1','var'); t_C2_C1 = zeros(3,1); warning('dummy assignement t_C2_C1');  end
+
+end

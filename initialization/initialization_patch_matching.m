@@ -27,7 +27,7 @@ harris_kappa = 0.08;
 num_keypoints = 1000;
 nonmaximum_supression_radius = 8;
 descriptor_radius = 9;
-match_lambda =6;
+match_lambda = 6;
 
 
 % bridge
@@ -40,7 +40,7 @@ catch
 end
 
 
-% find keypoints and descriptors
+% find harris keypoints and patch descriptors
 query_scores = harris(query_image, harris_patch_size, harris_kappa);
 query_keypoints = selectKeypoints(query_scores, num_keypoints, nonmaximum_supression_radius);
 query_descriptors = describeKeypoints(query_image, query_keypoints, descriptor_radius);
@@ -71,10 +71,20 @@ end
 matched_query_keypoints_homog = [matched_query_keypoints; ones(1,size(matched_query_keypoints,2))];
 matched_database_keypoints_homog = [matched_database_keypoints; ones(1,size(matched_database_keypoints,2))];
 
-[R_C2_C1, t_C2_C1] = estimateProjectionRANSAC(matched_query_keypoints_homog, ...
-                     matched_database_keypoints_homog, K, K)
+[R_C2_C1, t_C2_C1] = estimateProjectionRANSAC(matched_database_keypoints, ...
+    matched_query_keypoints, K, K)
 
 
+                 
+                 
+                 
+                 
+%% dummy assignement
+if ~exist('inlier_query_keypoints','var'); inlier_query_keypoints = 0; ...
+   warning('dummy assignement inlier_query_keypoints');  end
+if ~exist('corresponding_landmarks','var'); corresponding_landmarks = 0; ...
+   warning('dummy assignement corresponding_landmarks'); end
+                 
 end
 
 
