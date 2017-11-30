@@ -24,7 +24,7 @@ plot_inlier_matches = true;
 % parameters 
 harris_patch_size = 9;
 harris_kappa = 0.08;
-num_keypoints = 1000;
+num_keypoints = 200;
 nonmaximum_supression_radius = 8;
 descriptor_radius = 9;
 match_lambda = 5;
@@ -68,9 +68,8 @@ if plot_all_matches
 end
 
 % compute essential matrix in RANSAC fashion
-clc
 
-[R_C2_C1, t_C2_C1, E_C2_C1,best_inlier_mask, max_num_inliers_history] = ...
+[R_C2_C1, t_C2_C1, best_inlier_mask, max_num_inliers_history] = ...
     estimateProjectionRANSAC(matched_database_keypoints, matched_query_keypoints, K);
 R_C2_C1
 t_C2_C1
@@ -100,8 +99,6 @@ figure(1); clf
     subplot(3, 1, 3);
         plot(max_num_inliers_history);
         title('Maximum inlier count over RANSAC iterations.');
-                 
-                 
                  
                  
 %% dummy assignement
