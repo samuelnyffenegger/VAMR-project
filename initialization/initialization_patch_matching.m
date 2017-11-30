@@ -67,38 +67,50 @@ if plot_all_matches
         plotMatches(all_matches, query_keypoints, database_keypoints, 2, 'g-')
 end
 
-% compute essential matrix in RANSAC fashion
+%% compute essential matrix in RANSAC fashion
 
-[R_C2_C1, t_C2_C1, best_inlier_mask, max_num_inliers_history] = ...
+[R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, max_num_inliers_history] = ...
     estimateProjectionRANSAC(matched_database_keypoints, matched_query_keypoints, K);
-R_C2_C1
-t_C2_C1
 
-% plot 
-figure(1); clf
-    subplot(3, 1, 1);
-        imshow(query_image);
-        hold on;
-        plot(query_keypoints(2, :), query_keypoints(1, :), 'rx', 'Linewidth', 2);
-        plotMatches(all_matches, query_keypoints, database_keypoints);
-        title('All keypoints and matches');
+M_C2_C1 = [R_C2_C1, t_C2_C1]
 
-    subplot(3, 1, 2);
-        imshow(query_image);
-        hold on;
-        plot(matched_query_keypoints(2, (1-best_inlier_mask)>0), ...
-            matched_query_keypoints(1, (1-best_inlier_mask)>0), 'rx', 'Linewidth', 2);
-        plot(matched_query_keypoints(2, (best_inlier_mask)>0), ...
-            matched_query_keypoints(1, (best_inlier_mask)>0), 'gx', 'Linewidth', 2);
-        plotMatches(matched_query_mask(best_inlier_mask>0), ...
-            matched_query_keypoints(:, best_inlier_mask>0), ...
-            database_keypoints);
-        hold off;
-        title('Inlier and outlier matches');
+%% visualization
+% convert point cloud in C2 frame into C1 (W) frame
+P_C1 = (R_C2_C1' * P_C2) + repmat(-R_C2_C1'*t_C2_C1,[1 size(P_C2, 2)]); 
+P_C1 = [P_C1;ones(1,size(P_C1,2))];
 
-    subplot(3, 1, 3);
-        plot(max_num_inliers_history);
+% Visualize the 3-D scene
+center_cam2_C1 = -R_C2_C1'*t_C2_C1;
+
+figure(1); clf;
+    subplot(4,1,1:3)
+        plot3(P_C1(1,:), P_C1(2,:), P_C1(3,:), 'x');
+
+        plotCoordinateFrame(eye(3),zeros(3,1), 0.8);
+        text(-0.1,-0.1,-0.1,'Cam 1','fontsize',10,'color','k','FontWeight','bold');
+
+        plotCoordinateFrame(R_C2_C1',center_cam2_C1, 0.8);
+        text(center_cam2_C1(1)-0.1, center_cam2_C1(2)-0.1, center_cam2_C1(3)-0.1,'Cam 2','fontsize',10,'color','k','FontWeight','bold');
+
+
+        xlabel('x'); ylabel('y'), zlabel('z');
+        axis equal
+        rotate3d on;
+        grid
+        view([0,0])
+        title('3d scene with camera frames')
+    
+    subplot(414)
+        plot(max_num_inliers_history)
         title('Maximum inlier count over RANSAC iterations.');
+
+%% ground truth compairison
+try
+    ground_1_3 = center_cam2_C1(1:2)
+    ground_truth_1_3 = (ground_truth(1,:) - ground_truth(3,:))'
+catch
+    % dont launch from outside
+end
                  
                  
 %% dummy assignement

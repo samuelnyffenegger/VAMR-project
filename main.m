@@ -72,7 +72,7 @@ end
     initialization_patch_matching(img1, img2, K);
 
 %% plot ground truth
-plot_animated = false; 
+plot_animated = true; 
 
 idx = 1:size(ground_truth,1); 
 if plot_animated

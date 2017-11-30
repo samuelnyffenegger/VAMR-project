@@ -1,6 +1,9 @@
 function [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, ...
     max_num_inliers_history] = estimateProjectionRANSAC(matched_database_keypoints, ...
-    matched_query_keypoints, K)
+    matched_query_keypoints, K, n_iterations, pixel_tolerance)
+% [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, ...
+%    max_num_inliers_history] = estimateProjectionRANSAC(matched_database_keypoints, ...
+%    matched_query_keypoints, K, n_iterations, pixel_tolerance);
 % estimates the relative position and orientation giving keypoints on two
 % images, frame C1 corresponds to the first (query) image, where frame C2 
 % corresponds to the second (database) image. Outliers are removed in a 
@@ -9,28 +12,24 @@ function [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, ...
 %   matched_database_keypoints (C1), 2xN coordinates of 2-D points in image 1, M1 = [I,0]_C1
 %   matched_query_keypoints (C2), 2xN coordinates of 2-D points in image 2
 %   K, 3x3 calibration matrix
+%   n_iterations, number of RANSAC iterations
+%   pixel_tolerance, tolerance in pixel for reprojected triangulated points
 % Output:
 %   R_C2_C1, rotaion matrix frame C1 in C2
 %   t_C2_C1, translation vector frame C1 in C2
-%   P_C2, 3xM real world point cloud of triangulated inliers in query frame
-%   E_C2_C1, 3x3 fundamental matrix
+%   P_C2, 3xN real world point cloud of triangulated inliers in query frame
+%   best_inlier_mask, 1xN, mask whether matched keypoint is an RANSAC inlier (1)
+%   max_num_inliers_history, maximum of number of inliers
+
 
 %% calculations
 
-% bridge
-try
-    % launched inside estimateEssentialMatrixRANSAC    
-catch
-    % launched outside
-end
-
-clc
 % control parameters
 plot_sample_keypoints = false;
 
 % parameters TODO: add those parameters to a central place
-n_iterations = 500;
-pixel_tolerance = 10; 
+if ~exist('n_iterations','var'); n_iterations = 500; end
+if ~exist('pixel_tolerance','var'); pixel_tolerance = 5; end
 k = 8; 
 
 % Initialize RANSAC
@@ -114,15 +113,14 @@ else
     [R_C2_C1,t_C2_C1] = disambiguateRelativePose(Rots,u3, ...
         inlier_database_keypoints_homog, inlier_query_keypoints_homog,K,K);
     
-%     % Triangulate a point cloud using the final transformation (R,t) and all inliers
-%     M_database = K * eye(3,4);
-%     M_query = K * [R_C2_C1, t_C2_C1];
-%     inlier_database_keypoints_homog = matched_database_keypoints_homog(:,best_inlier_mask);
-%     inlier_query_keypoints_homog = matched_query_keypoints_homog(:,best_inlier_mask);
-%     P_C1 = linearTriangulation(inlier_database_keypoints_homog, ...
-%         inlier_query_keypoints_homog, M_database, M_query);
-%     P_C2 = (R_C2_C1 * P_C1(1:3,:)) + repmat(t_C2_C1,[1 size(P_C1, 2)]); 
-    P_C2 = zeros(3,max_num_inliers);
+    % Triangulate a point cloud using the final transformation (R,t) and all inliers
+    M_database = K * eye(3,4);
+    M_query = K * [R_C2_C1, t_C2_C1];
+    inlier_database_keypoints_homog = matched_database_keypoints_homog(:,best_inlier_mask);
+    inlier_query_keypoints_homog = matched_query_keypoints_homog(:,best_inlier_mask);
+    P_C1 = linearTriangulation(inlier_database_keypoints_homog, ...
+        inlier_query_keypoints_homog, M_database, M_query);
+    P_C2 = (R_C2_C1 * P_C1(1:3,:)) + repmat(t_C2_C1,[1 size(P_C1, 2)]); 
 
 end
 

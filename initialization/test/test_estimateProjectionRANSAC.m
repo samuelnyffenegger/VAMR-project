@@ -65,20 +65,22 @@ end
 %% compute essential matrix in RANSAC fashion
 
 [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, max_num_inliers_history] = ...
-    estimateProjectionRANSAC(matched_database_keypoints, matched_query_keypoints, K);
+    estimateProjectionRANSAC(matched_database_keypoints, matched_query_keypoints, K, 500, 5);
 
 M_C2_C1 = [R_C2_C1, t_C2_C1]
 
 % convert point cloud in C2 frame into C1 (W) frame
 P_C1 = (R_C2_C1' * P_C2) + repmat(-R_C2_C1'*t_C2_C1,[1 size(P_C2, 2)]); 
+P_C1 = [P_C1;ones(1,size(P_C1,2))];
 
 % Visualize the 3-D scene
 center_myCam2_C1 = -R_C2_C1'*t_C2_C1;
 center_cam2_C1 = -R_C2_W'*T_C2_W;
 
-figure(2),
+figure(2); clf;
     subplot(4,1,1:3)
-        plot3(P(1,:), P(2,:), P(3,:), 'bo');
+        plot3(P(1,:), P(2,:), P(3,:), 'bo'); hold on;
+        plot3(P_C1(1,:), P_C1(2,:), P_C1(3,:), 'cx');
 
         plotCoordinateFrame(eye(3),zeros(3,1), 0.8);
         text(-0.1,-0.1,-0.1,'Cam 1','fontsize',10,'color','k','FontWeight','bold');
