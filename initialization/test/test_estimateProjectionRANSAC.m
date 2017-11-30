@@ -64,10 +64,13 @@ end
 
 %% compute essential matrix in RANSAC fashion
 
-[R_C2_C1, t_C2_C1, best_inlier_mask, max_num_inliers_history] = ...
+[R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, max_num_inliers_history] = ...
     estimateProjectionRANSAC(matched_database_keypoints, matched_query_keypoints, K);
 
 M_C2_C1 = [R_C2_C1, t_C2_C1]
+
+% convert point cloud in C2 frame into C1 (W) frame
+P_C1 = (R_C2_C1' * P_C2) + repmat(-R_C2_C1'*t_C2_C1,[1 size(P_C2, 2)]); 
 
 % Visualize the 3-D scene
 center_myCam2_C1 = -R_C2_C1'*t_C2_C1;
@@ -98,7 +101,8 @@ figure(2),
         plot(max_num_inliers_history)
         title('Maximum inlier count over RANSAC iterations.');
 
-
+% camera pose error analysis
+SSD_camera_pose = sum(abs(center_cam2_C1-center_myCam2_C1).^2)
 
 
 

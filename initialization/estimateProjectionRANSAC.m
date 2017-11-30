@@ -1,4 +1,4 @@
-function [R_C2_C1, t_C2_C1, best_inlier_mask, ...
+function [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, ...
     max_num_inliers_history] = estimateProjectionRANSAC(matched_database_keypoints, ...
     matched_query_keypoints, K)
 % estimates the relative position and orientation giving keypoints on two
@@ -12,6 +12,7 @@ function [R_C2_C1, t_C2_C1, best_inlier_mask, ...
 % Output:
 %   R_C2_C1, rotaion matrix frame C1 in C2
 %   t_C2_C1, translation vector frame C1 in C2
+%   P_C2, 3xM real world point cloud of triangulated inliers in query frame
 %   E_C2_C1, 3x3 fundamental matrix
 
 %% calculations
@@ -33,11 +34,10 @@ pixel_tolerance = 10;
 k = 8; 
 
 % Initialize RANSAC
+matched_query_keypoints = flipud(matched_query_keypoints); % (row, col) to (u, v)
+matched_database_keypoints = flipud(matched_database_keypoints); % (row, col) to (u, v)
 n_matched_keypoints = size(matched_database_keypoints,2);
 best_inlier_mask = zeros(1, n_matched_keypoints);
-% (row, col) to (u, v)
-matched_query_keypoints = flipud(matched_query_keypoints);
-matched_database_keypoints = flipud(matched_database_keypoints);
 max_num_inliers_history = zeros(1, n_iterations);
 max_num_inliers = 0;
 min_inlier_count = k; 
@@ -91,30 +91,40 @@ for i = 1:n_iterations
             n_inliers >= min_inlier_count
         max_num_inliers = n_inliers;        
         best_inlier_mask = inlier_mask;
-        R_C2_C1 = R_C2_C1_guess;
-        t_C2_C1 = t_C2_C1_guess;
     end
     max_num_inliers_history(i) = max_num_inliers;
 end
 
-% % final point cloud triangulation and pose estimation using inliers
-% if max_num_inliers == 0
-%     warning('RANSAC did not find enough inliers');
-%     R_C2_C1 = [];
-%     t_C2_C1 = [];
-% else
-%     % calculate fundamental matrix
-%     inlier_database_keypoints_homog = [matched_database_keypoints(:,best_inlier_mask); ones(1,max_num_inliers)];
-%     inlier_query_keypoints_homog = [matched_query_keypoints(:,best_inlier_mask); ones(1,max_num_inliers)];
-%     F_C2_C1 = fundamentalEightPoint_normalized(inlier_database_keypoints_homog, ...
-%         inlier_query_keypoints_homog);
-%     
-%     % calculate, decompose and disambiguete essential matrix
-%     E_C2_C1 = K'*F_C2_C1*K;
-%     [Rots,u3] = decomposeEssentialMatrix(E_C2_C1);
-%     [R_C2_C1,t_C2_C1] = disambiguateRelativePose(Rots,u3, ...
-%         inlier_database_keypoints_homog, inlier_query_keypoints_homog,K,K);
-% end
+% final point cloud triangulation and pose estimation using inliers
+if max_num_inliers == 0
+    warning('RANSAC did not find enough inliers');
+    R_C2_C1 = [];
+    t_C2_C1 = [];
+    P_C2 = [];
+else
+    % calculate fundamental matrix
+    inlier_database_keypoints_homog = [matched_database_keypoints(:,best_inlier_mask); ones(1,max_num_inliers)];
+    inlier_query_keypoints_homog = [matched_query_keypoints(:,best_inlier_mask); ones(1,max_num_inliers)];
+    F_C2_C1 = fundamentalEightPoint_normalized(inlier_database_keypoints_homog, ...
+        inlier_query_keypoints_homog);
+    
+    % calculate, decompose and disambiguete essential matrix
+    E_C2_C1 = K'*F_C2_C1*K;
+    [Rots,u3] = decomposeEssentialMatrix(E_C2_C1);
+    [R_C2_C1,t_C2_C1] = disambiguateRelativePose(Rots,u3, ...
+        inlier_database_keypoints_homog, inlier_query_keypoints_homog,K,K);
+    
+%     % Triangulate a point cloud using the final transformation (R,t) and all inliers
+%     M_database = K * eye(3,4);
+%     M_query = K * [R_C2_C1, t_C2_C1];
+%     inlier_database_keypoints_homog = matched_database_keypoints_homog(:,best_inlier_mask);
+%     inlier_query_keypoints_homog = matched_query_keypoints_homog(:,best_inlier_mask);
+%     P_C1 = linearTriangulation(inlier_database_keypoints_homog, ...
+%         inlier_query_keypoints_homog, M_database, M_query);
+%     P_C2 = (R_C2_C1 * P_C1(1:3,:)) + repmat(t_C2_C1,[1 size(P_C1, 2)]); 
+    P_C2 = zeros(3,max_num_inliers);
+
+end
 
 
 %% dummy assignement
