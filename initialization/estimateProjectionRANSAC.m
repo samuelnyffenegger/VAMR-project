@@ -34,9 +34,9 @@ pixel_tolerance = 10;
 k = 8; 
 
 % Initialize RANSAC
-matched_query_keypoints = flipud(matched_query_keypoints); % (row, col) to (u, v)
-matched_database_keypoints = flipud(matched_database_keypoints); % (row, col) to (u, v)
-n_matched_keypoints = size(matched_database_keypoints,2);
+matched_query_keypoints_uv = flipud(matched_query_keypoints); % (row, col) to (u, v)
+matched_database_keypoints_uv = flipud(matched_database_keypoints); % (row, col) to (u, v)
+n_matched_keypoints = size(matched_database_keypoints_uv,2);
 best_inlier_mask = zeros(1, n_matched_keypoints);
 max_num_inliers_history = zeros(1, n_iterations);
 max_num_inliers = 0;
@@ -45,13 +45,13 @@ min_inlier_count = k;
 % RANSAC looop
 for i = 1:n_iterations
     % randomly pick k points 
-    [sample_database_keypoints, idx] = datasample(matched_database_keypoints, k, 2, 'Replace', false);
-    sample_query_keypoints = matched_query_keypoints(:,idx);
+    [sample_database_keypoints, idx] = datasample(matched_database_keypoints_uv, k, 2, 'Replace', false);
+    sample_query_keypoints = matched_query_keypoints_uv(:,idx);
 
     % plot sampled keypoints
     if plot_sample_keypoints
         figure(1);
-        plot(matched_query_keypoints(2, :), matched_query_keypoints(1, :), 'rx', 'Linewidth', 2);
+        plot(matched_query_keypoints_uv(2, :), matched_query_keypoints_uv(1, :), 'rx', 'Linewidth', 2);
         plot(sample_query_keypoints(2, :), sample_query_keypoints(1, :), 'bx', 'Linewidth', 2);
     end
     
@@ -70,8 +70,8 @@ for i = 1:n_iterations
     % Triangulate a point cloud using the guess transformation (R,t)
     M_database = K * eye(3,4);
     M_query = K * [R_C2_C1_guess, t_C2_C1_guess];
-    matched_query_keypoints_homog = [matched_query_keypoints; ones(1,size(matched_query_keypoints,2))];
-    matched_database_keypoints_homog = [matched_database_keypoints; ones(1,size(matched_database_keypoints,2))];
+    matched_query_keypoints_homog = [matched_query_keypoints_uv; ones(1,size(matched_query_keypoints_uv,2))];
+    matched_database_keypoints_homog = [matched_database_keypoints_uv; ones(1,size(matched_database_keypoints_uv,2))];
     P_guess_C1 = linearTriangulation(matched_database_keypoints_homog, ...
         matched_query_keypoints_homog, M_database, M_query);
     
@@ -81,7 +81,7 @@ for i = 1:n_iterations
     projected_points = projectPoints(P_guess_C2(1:3,:), K); 
     
     % count inliers 
-    difference = matched_query_keypoints - projected_points;
+    difference = matched_query_keypoints_uv - projected_points;
     errors = sum(difference.^2, 1);
     inlier_mask = errors < pixel_tolerance^2;
     n_inliers = nnz(inlier_mask); 
@@ -103,8 +103,8 @@ if max_num_inliers == 0
     P_C2 = [];
 else
     % calculate fundamental matrix
-    inlier_database_keypoints_homog = [matched_database_keypoints(:,best_inlier_mask); ones(1,max_num_inliers)];
-    inlier_query_keypoints_homog = [matched_query_keypoints(:,best_inlier_mask); ones(1,max_num_inliers)];
+    inlier_database_keypoints_homog = [matched_database_keypoints_uv(:,best_inlier_mask); ones(1,max_num_inliers)];
+    inlier_query_keypoints_homog = [matched_query_keypoints_uv(:,best_inlier_mask); ones(1,max_num_inliers)];
     F_C2_C1 = fundamentalEightPoint_normalized(inlier_database_keypoints_homog, ...
         inlier_query_keypoints_homog);
     
