@@ -67,14 +67,14 @@ if plot_all_matches
         plotMatches(all_matches, query_keypoints, database_keypoints, 2, 'g-')
 end
 
-%% compute essential matrix in RANSAC fashion
+% compute essential matrix in RANSAC fashion
 
 [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, max_num_inliers_history] = ...
-    estimateProjectionRANSAC(matched_database_keypoints, matched_query_keypoints, K);
+    estimateProjectionRANSAC(matched_database_keypoints, matched_query_keypoints, K, 500, 5);
 
 M_C2_C1 = [R_C2_C1, t_C2_C1]
 
-%% visualization
+% visualization
 % convert point cloud in C2 frame into C1 (W) frame
 P_C1 = (R_C2_C1' * P_C2) + repmat(-R_C2_C1'*t_C2_C1,[1 size(P_C2, 2)]); 
 P_C1 = [P_C1;ones(1,size(P_C1,2))];
@@ -106,7 +106,7 @@ figure(1); clf;
 
 %% ground truth compairison
 try
-    ground_1_3 = center_cam2_C1(1:2)
+    ground_1_3 = center_cam2_C1([1,3])
     ground_truth_1_3 = (ground_truth(1,:) - ground_truth(3,:))'
 catch
     % dont launch from outside

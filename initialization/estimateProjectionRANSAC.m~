@@ -90,9 +90,9 @@ for i = 1:n_iterations
             n_inliers >= min_inlier_count
         max_num_inliers = n_inliers;         
         best_inlier_mask = inlier_mask;
-        talkative = true;
+        talkative = true
         if talkative
-           fprintf(['n_inliers(',num2str(i),') = ',num2str(max_num_inliers),'\n']) 
+           fprintf(['n_inliers = ',num2str(n_inliers)]) 
         end
     end
     max_num_inliers_history(i) = max_num_inliers;
@@ -128,7 +128,6 @@ else
 
 end
 
-disp('done!')
 
 %% dummy assignement
 if ~exist('R_C2_C1','var'); R_C2_C1 = eye(3); warning('dummy assignement R_C2_C1'); end

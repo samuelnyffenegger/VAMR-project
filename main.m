@@ -42,7 +42,6 @@ else
 end
 
 % Bootstrap
-
 if ds == 0
     bootstrap_frames = [1,3];
     img1 = imread([kitti_path '/00/image_0/' ...
@@ -72,9 +71,9 @@ end
     initialization_patch_matching(img1, img2, K);
 
 %% plot ground truth
-plot_animated = true; 
+plot_animated = false; 
 
-idx = 1:size(ground_truth,1); 
+idx = 1:3; %size(ground_truth,1); 
 if plot_animated
     figure(2); clf; hold on; 
         axis([-300,300,-100,500]); grid on;
@@ -87,6 +86,7 @@ else
     figure(1); clf; hold on; grid on;
         plot(ground_truth(idx,1),ground_truth(idx,2),'k-');    
         xlabel('x'); ylabel('y'); title('ground truth');
+        axis equal
 end
 
 %% Continuous operation

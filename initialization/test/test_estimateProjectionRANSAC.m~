@@ -59,26 +59,20 @@ if plot_all_matches
     figure(1); clf; 
         imshow(query_image_colour); hold on;
         plot(query_keypoints(2, :), query_keypoints(1, :), 'rx', 'Linewidth', 2);
-        plotMatches(all_matches, query_keypoints, database_keypoints, 1, 'k-')
+        plotMatches(all_matches, query_keypoints, database_keypoints, 1, 'g-')
 end
 
-% compute essential matrix in RANSAC fashion
+%% compute essential matrix in RANSAC fashion
 
 [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, max_num_inliers_history] = ...
     estimateProjectionRANSAC(matched_database_keypoints, matched_query_keypoints, K, 500, 5);
 
 M_C2_C1 = [R_C2_C1, t_C2_C1]
 
-% plot all inlier matches
-clc
-if plot_all_matches 
-    figure(1);
-        plotMatchedKeypoints(matched_query_keypoints(:,best_inlier_mask), ...
-            matched_database_keypoints(:,best_inlier_mask), 2, 'g-')
-end
+% plot inlier m
 
 
-%% convert point cloud in C2 frame into C1 (W) frame
+% convert point cloud in C2 frame into C1 (W) frame
 P_C1 = (R_C2_C1' * P_C2) + repmat(-R_C2_C1'*t_C2_C1,[1 size(P_C2, 2)]); 
 P_C1 = [P_C1;ones(1,size(P_C1,2))];
 
