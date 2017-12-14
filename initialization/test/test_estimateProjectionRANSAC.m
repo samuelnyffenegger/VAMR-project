@@ -1,8 +1,8 @@
 %% Test estimateProjectionRANSAC
 clear all; close all; clc;
-path_to_file = fileparts(which('test_estimateFundamentalMatrix.m')); 
-path_to_code = [path_to_file,'/../..'];
-addpath(genpath(path_to_code));
+% path_to_file = fileparts(which('test_estimateFundamentalMatrix.m')); 
+% path_to_code = [path_to_file,'/../..'];
+% addpath(genpath(path_to_code));
 
 % load images
 database_image_colour = imread('initialization/test/fountain_1.jpg');
@@ -65,7 +65,7 @@ end
 % compute essential matrix in RANSAC fashion
 
 [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, max_num_inliers_history] = ...
-    estimateProjectionRANSAC(matched_database_keypoints, matched_query_keypoints, K, 500, 5);
+    estimateProjectionRANSAC(matched_database_keypoints, matched_query_keypoints, K, 500, 2);
 
 M_C2_C1 = [R_C2_C1, t_C2_C1]
 
@@ -80,7 +80,7 @@ if plot_all_matches
 end
 
 
-%% convert point cloud in C2 frame into C1 (W) frame
+% convert point cloud in C2 frame into C1 (W) frame
 P_C1 = (R_C2_C1' * P_C2) + repmat(-R_C2_C1'*t_C2_C1,[1 size(P_C2, 2)]); 
 P_C1 = [P_C1;ones(1,size(P_C1,2))];
 
@@ -117,5 +117,5 @@ figure(2); clf;
 % camera pose error analysis
 SSD_camera_pose = sum(abs(center_cam2_C1-center_myCam2_C1).^2)
 
-
+ 
 
