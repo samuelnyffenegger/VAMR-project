@@ -26,6 +26,8 @@ function [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, ...
 
 % control parameters
 plot_sample_keypoints = false;
+talkative = false;
+
 
 % parameters TODO: add those parameters to a central place
 if ~exist('n_iterations','var'); n_iterations = 500; end
@@ -90,7 +92,6 @@ for i = 1:n_iterations
             n_inliers >= min_inlier_count
         max_num_inliers = n_inliers;         
         best_inlier_mask = inlier_mask;
-        talkative = true;
         if talkative
            fprintf(['n_inliers(',num2str(i),') = ',num2str(max_num_inliers),'\n']) 
         end
@@ -128,7 +129,7 @@ else
 
 end
 
-disp('done!')
+
 
 %% dummy assignement
 if ~exist('R_C2_C1','var'); R_C2_C1 = eye(3); warning('dummy assignement R_C2_C1'); end

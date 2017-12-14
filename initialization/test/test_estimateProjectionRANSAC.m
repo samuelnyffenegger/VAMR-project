@@ -70,9 +70,11 @@ end
 M_C2_C1 = [R_C2_C1, t_C2_C1]
 
 % plot all inlier matches
-clc
 if plot_all_matches 
-    figure(1);
+    figure(1); clf; 
+        imshow(query_image_colour); hold on;
+        plot(query_keypoints(2, :), query_keypoints(1, :), 'rx', 'Linewidth', 2);
+        plotMatches(all_matches, query_keypoints, database_keypoints, 1, 'k-')
         plotMatchedKeypoints(matched_query_keypoints(:,best_inlier_mask), ...
             matched_database_keypoints(:,best_inlier_mask), 2, 'g-')
 end
