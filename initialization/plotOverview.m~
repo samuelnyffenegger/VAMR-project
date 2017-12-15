@@ -41,11 +41,12 @@ figure(1); clf
         title('Trajectory of last 20 frames and landmarks')
 
     subplot(2,4,5)
-        plot(n_tracked_landmarks,'.-'); grid on;
+        plot(n_tracked_landmarks)
         title('# tracked landmarks over last 20 frames')
+    %%
     subplot(2,4,6)
-        plot(ground_guess(1,:),ground_guess(2,:),'.-')
-        title('full trajectory'); axis equal; grid on; 
+        plot(ground_guess(1,),ground_guess(:,2))
+        title('full trajectory')
 
 
 end

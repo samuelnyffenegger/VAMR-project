@@ -4,10 +4,10 @@
 %   Nov 2017 - Jan 2018
 
 %% Setup
-clear all; close all; clc;
+clear all; clc;
 addpath(genpath(cd));
 
-ds = 0; % 0: KITTI, 1: Malaga, 2: parking
+ds = 2; % 0: KITTI, 1: Malaga, 2: parking
 
 path_to_main = fileparts(which('main.m')); 
 if ds == 0
@@ -44,8 +44,7 @@ end
 % Bootstrap
 if ds == 0
     bootstrap_frames = [0,2];
-    bootstrap_frames = [100,102];
-    
+    % bootstrap_frames = [100,102];
     img1 = imread([kitti_path '/00/image_0/' ...
         sprintf('%06d.png',bootstrap_frames(1))]);
     img2 = imread([kitti_path '/00/image_0/' ...
@@ -68,8 +67,8 @@ else
     assert(false);
 end
 
-%% initialization 
-[inlier_query_keypoints, corresponding_landmarks] = ...
+% initialization 
+[inlier_query_keypoints, corresponding_landmarks, M_W_C2] = ...
     initialization_patch_matching(img1, img2, K);
         
 %% plot ground truth

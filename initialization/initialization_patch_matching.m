@@ -1,6 +1,6 @@
 function [inlier_query_keypoints, corresponding_landmarks, M_W_C2] =  ...
     initialization_patch_matching(database_image, query_image, K)
-% [inlier_query_keypoints, corresponding_landmarks] =  ...
+% [inlier_query_keypoints, corresponding_landmarks, M_W_C2] =  ...
 % initialization_patch_matching(query_image, database_image, K);
 % establishes keypoint correspondences using patch matching, estimates the
 % relative pose between frames and triangulates a point cloud of 3D
@@ -72,7 +72,7 @@ n_matched_inlier_keypoints = sum(best_inlier_mask>0);
 inlier_query_keypoints = matched_query_keypoints(:,best_inlier_mask);
 
 % drop points which are behind the camera
-P_C2 = P_C2(:,P_C2(3,:) > 0)
+P_C2 = P_C2(:,P_C2(3,:) > 0);
 
 % homogeneous transformation matrices
 M_C2_C1 = [R_C2_C1, t_C2_C1];
@@ -84,61 +84,61 @@ P_C1 = M_C1_C2*[P_C2; ones(1,size(P_C2, 2))];
 P_W = P_C1;
 corresponding_landmarks = P_W; 
 
+% number of tracked landmarks
+n_tracked_landmarks = n_matched_keypoints;
+
+% ground guess
+ground_guess = [[0;0],M_W_C2([1,3],4)]; % [x,z]
+
 % talk
 if talkative
     fprintf('keypoints: \n\tmatched = %i, \n\tmatched inliers = %i\n\n', ...
         n_matched_keypoints,n_matched_inlier_keypoints)
     eulXYZ = rad2deg(rotm2eul(M_C2_C1(1:3,1:3),'XYZ'));
-    turn_arround_y_deg = eulXYZ(2); 
+    turn_arround_y_deg = -eulXYZ(2); % SN: why negative? 
     % fprintf('homogeneous transformation matrix: M_W_C2\n'); disp(M_W_C2);
-    fprintf('motion W -> C2: (in world frame)\n\tforward: z = %2.2f \n',M_W_C2(3,4))
-    fprintf('\tlateral: x = %2.2f \n\trotation: theta = %2.2f deg\n\n',M_W_C2(1,4),turn_arround_y_deg)
+    fprintf('motion W -> C2: (in world frame)\n\tup: z = %2.2f \n',M_W_C2(3,4))
+    fprintf('\tright: x = %2.2f \n\trotation: theta = %2.2f deg\n\n',M_W_C2(1,4),turn_arround_y_deg)
 end
 
 % plot overview
-% plotOverview(query_image, query_keypoints, matched_query_keypoints, matched_database_keypoints, best_inlier_mask)
+plotOverview(query_image, query_keypoints, ...
+    matched_query_keypoints, matched_database_keypoints, best_inlier_mask, ...
+    corresponding_landmarks, M_W_C2, n_tracked_landmarks, ground_guess)
 
-
-% plot 
-
-% plot all inlier matches
-if plot_all_matches 
-    figure(1); clf
-        imshow(query_image); hold on;
-        plot(query_keypoints(2, :), query_keypoints(1, :), 'rx', 'Linewidth', 2);
-        plotMatchedKeypoints(matched_query_keypoints(:,best_inlier_mask), ...
-            matched_database_keypoints(:,best_inlier_mask), 2, 'g-')
-        plotMatchedKeypoints(matched_query_keypoints(:,not(best_inlier_mask)), ...
-            matched_database_keypoints(:,not(best_inlier_mask)), 1, 'c-')
-end
-
-
-% Visualize the 3-D scene
-clc
-P_W_center = mean(P_W,2); 
-last_camera_position_W = M_W_C2(1:3,4); 
-d_last_cam_center = norm(P_W_center - last_camera_position_W);
-% visualization_scaling = 2;
-% landmarks_mask = (sqrt(sum(P_W-P_W_center).^2) < d_last_cam_center * visualization_scaling);
-max_visual_distance = 25;
-landmarks_mask = (sqrt(sum(P_W-P_W_center).^2) < max_visual_distance);
-
-%
-figure(2); clf;
-    query_cam_W = M_W_C2(1:3,4);
-    plot3(corresponding_landmarks(1,landmarks_mask), corresponding_landmarks(2,landmarks_mask), ...
-         corresponding_landmarks(3,landmarks_mask),'kx','LineWidth',2);
-    hold on; 
-    plot3([0,query_cam_W(1)],[0,query_cam_W(2)],[0,query_cam_W(3)],'bx-')
-    plotCoordinateFrame(eye(3),zeros(3,1), 10);
-
-    plotCoordinateFrame(M_W_C2(1:3,1:3),M_W_C2(1:3,4), 10);
-
-    xlabel('x'); ylabel('y'), zlabel('z');
-    axis equal
-    rotate3d on;
-    grid on
-    view([0,0])
-    title('Trajectory of last 20 frames and landmarks')
+% %% plot 
+% 
+% % plot all inlier matches
+% if plot_all_matches 
+%     figure(1); clf
+%         imshow(query_image); hold on;
+%         plot(query_keypoints(2, :), query_keypoints(1, :), 'rx', 'Linewidth', 2);
+%         plotMatchedKeypoints(matched_query_keypoints(:,best_inlier_mask), ...
+%             matched_database_keypoints(:,best_inlier_mask), 2, 'g-')
+%         plotMatchedKeypoints(matched_query_keypoints(:,not(best_inlier_mask)), ...
+%             matched_database_keypoints(:,not(best_inlier_mask)), 1, 'c-')
+% end
+% 
+% 
+% % Visualize the 3-D scene
+% max_visual_distance = 25;
+% landmarks_mask = (sqrt(sum(P_W-mean(P_W,2)).^2) < max_visual_distance);
+% 
+% figure(2); clf;
+%     query_cam_W = M_W_C2(1:3,4);
+%     plot3(corresponding_landmarks(1,landmarks_mask), corresponding_landmarks(2,landmarks_mask), ...
+%          corresponding_landmarks(3,landmarks_mask),'kx','LineWidth',2);
+%     hold on; 
+%     plot3([0,query_cam_W(1)],[0,query_cam_W(2)],[0,query_cam_W(3)],'bx-')
+%     plotCoordinateFrame(eye(3),zeros(3,1), 10);
+% 
+%     plotCoordinateFrame(M_W_C2(1:3,1:3),M_W_C2(1:3,4), 10);
+% 
+%     xlabel('x'); ylabel('y'), zlabel('z');
+%     axis equal
+%     rotate3d on;
+%     grid on
+%     view([0,0])
+%     title('Trajectory of last 20 frames and landmarks')
                  
 end
