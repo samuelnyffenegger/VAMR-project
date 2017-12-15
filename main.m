@@ -44,7 +44,7 @@ end
 % Bootstrap
 if ds == 0
     bootstrap_frames = [0,2];
-    % bootstrap_frames = [100,106];
+    bootstrap_frames = [100,102];
     
     img1 = imread([kitti_path '/00/image_0/' ...
         sprintf('%06d.png',bootstrap_frames(1))]);
@@ -71,12 +71,6 @@ end
 %% initialization 
 [inlier_query_keypoints, corresponding_landmarks] = ...
     initialization_patch_matching(img1, img2, K);
-
-% ground_truth_1_3 = (ground_truth(1,:) - ground_truth(3,:))'; 
-% ground_truth_heading = rad2deg(atan2(-ground_truth_1_3(2),ground_truth_1_3(1)))
-
-% plot overview
-% plotOverview(query_image, query_keypoints, matched_query_keypoints, matched_database_keypoints, best_inlier_mask)
         
 %% plot ground truth
 plot_animated = false; 
