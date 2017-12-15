@@ -17,7 +17,7 @@ function [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, ...
 % Output:
 %   R_C2_C1, rotaion matrix frame C1 in C2
 %   t_C2_C1, translation vector frame C1 in C2
-%   P_C2, 3xN real world point cloud of triangulated inliers in query frame
+%   P_C2, 3xN real world point cloud of triangulated inliers in query frame (C2)
 %   best_inlier_mask, 1xN, mask whether matched keypoint is an RANSAC inlier (1)
 %   max_num_inliers_history, maximum of number of inliers
 
