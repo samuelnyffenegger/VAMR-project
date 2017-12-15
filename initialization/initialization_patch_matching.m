@@ -85,9 +85,12 @@ corresponding_landmarks = P_C1(1:3,:); % for initialization: C1 == W
 query_cam_C1 = -R_C2_C1'*t_C2_C1;
 query_cam_W = query_cam_C1; 
 
+eulXYZ = rad2deg(rotm2eul(M_C2_C1(1:3,1:3),'XYZ'));
+turn_arround_y = eulXYZ(2)
 
 
-% % plot 
+
+%% plot 
 
 % plot all inlier matches
 if plot_all_matches 
@@ -101,7 +104,7 @@ if plot_all_matches
 end
 
 
-%% Visualize the 3-D scene
+% Visualize the 3-D scene
 figure(2); clf;
         plot3(corresponding_landmarks(1,:), corresponding_landmarks(2,:), ...
              corresponding_landmarks(3,:),'kx','LineWidth',2);
@@ -123,9 +126,9 @@ figure(2); clf;
         view([0,0])
         title('3d scene with camera frames')
     
-figure(3); clf
-    plot(max_num_inliers_history)
-    title('Maximum inlier count over RANSAC iterations.');
+% figure(3); clf
+%     plot(max_num_inliers_history)
+%     title('Maximum inlier count over RANSAC iterations.');
 
     
 % % ground truth compairison

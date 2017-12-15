@@ -7,7 +7,7 @@
 clear all; close all; clc;
 addpath(genpath(cd));
 
-ds = 2; % 0: KITTI, 1: Malaga, 2: parking
+ds = 0; % 0: KITTI, 1: Malaga, 2: parking
 
 path_to_main = fileparts(which('main.m')); 
 if ds == 0
@@ -44,6 +44,8 @@ end
 % Bootstrap
 if ds == 0
     bootstrap_frames = [0,2];
+    bootstrap_frames = [100,106];
+    
     img1 = imread([kitti_path '/00/image_0/' ...
         sprintf('%06d.png',bootstrap_frames(1))]);
     img2 = imread([kitti_path '/00/image_0/' ...
@@ -57,7 +59,7 @@ elseif ds == 1
         '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
         left_images(bootstrap_frames(2)).name]));
 elseif ds == 2
-    bootstrap_frames = [0,4]; 
+    bootstrap_frames = [40,45]; 
     img1 = rgb2gray(imread([parking_path ...
         sprintf('/images/img_%05d.png',bootstrap_frames(1))]));
     img2 = rgb2gray(imread([parking_path ...
@@ -66,7 +68,7 @@ else
     assert(false);
 end
 
-% initialization 
+%% initialization 
 [inlier_query_keypoints, corresponding_landmarks] = ...
     initialization_patch_matching(img1, img2, K);
 

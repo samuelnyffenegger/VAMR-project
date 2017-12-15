@@ -18,3 +18,15 @@ inliers_matches = all_matches(all_matches>0).*inliers_mask;
 all_inliers_mask = all_matches > 0;
 all_inliers_mask(all_inliers_mask>0) = inliers_matches;
 all_inliers_matches = all_matches.*all_inliers_mask;
+
+%% 
+A = 1:12;
+A = reshape(A,4,3)'
+
+
+
+
+
+
+
+
