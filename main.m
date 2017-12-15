@@ -6,8 +6,7 @@
 %% Setup
 clear all; clc;
 addpath(genpath(cd));
-
-ds = 2; % 0: KITTI, 1: Malaga, 2: parking
+run('param.m');
 
 path_to_main = fileparts(which('main.m')); 
 if ds == 0
@@ -43,14 +42,11 @@ end
 
 % Bootstrap
 if ds == 0
-    bootstrap_frames = [0,2];
-    % bootstrap_frames = [100,102];
     img1 = imread([kitti_path '/00/image_0/' ...
         sprintf('%06d.png',bootstrap_frames(1))]);
     img2 = imread([kitti_path '/00/image_0/' ...
         sprintf('%06d.png',bootstrap_frames(2))]);
 elseif ds == 1
-    bootstrap_frames = []; % tba
     img1 = rgb2gray(imread([malaga_path ...
         '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
         left_images(bootstrap_frames(1)).name]));
@@ -58,7 +54,6 @@ elseif ds == 1
         '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
         left_images(bootstrap_frames(2)).name]));
 elseif ds == 2
-    bootstrap_frames = [40,45]; 
     img1 = rgb2gray(imread([parking_path ...
         sprintf('/images/img_%05d.png',bootstrap_frames(1))]));
     img2 = rgb2gray(imread([parking_path ...
@@ -67,29 +62,10 @@ else
     assert(false);
 end
 
-% initialization 
+%% initialization 
 [inlier_query_keypoints, corresponding_landmarks, M_W_C2] = ...
     initialization_patch_matching(img1, img2, K);
         
-%% plot ground truth
-plot_animated = false; 
-
-idx = 1:3; %size(ground_truth,1); 
-if plot_animated
-    figure(2); clf; hold on; 
-        axis([-300,300,-100,500]); grid on;
-        xlabel('x'); ylabel('y'); title('ground truth')
-        for i = idx(1:end-1)
-            plot(ground_truth(i:i+1,1),ground_truth(i:i+1,2),'k-');
-            pause(0.001);
-        end
-else
-    figure(1); clf; hold on; grid on;
-        plot(ground_truth(idx,1),ground_truth(idx,2),'k-');    
-        xlabel('x'); ylabel('y'); title('ground truth');
-        axis equal
-end
-
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
 for i = range

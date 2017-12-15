@@ -7,10 +7,6 @@ function plotOverview(query_image, query_keypoints, ...
 
 %% calculations 
 
-% dummy
-t = 0:0.01:2*pi; y = sin(t);
-
-
 figure(1); clf
     subplot(2,4,[1,2]); 
         imshow(query_image); hold on;
@@ -22,10 +18,15 @@ figure(1); clf
         title('Current Image'); 
         
     subplot(2,4,[3,4,7,8]);
-        max_visual_distance = 25;
+        only_plot_landmarks_near_centre = true;
         frame_size = 2;
-        landmarks_mask = (sqrt(sum(corresponding_landmarks- ...
-            mean(corresponding_landmarks,2)).^2) < max_visual_distance);
+        if only_plot_landmarks_near_centre
+            max_visual_distance = 25;
+            landmarks_mask = (sqrt(sum(corresponding_landmarks- ...
+                mean(corresponding_landmarks,2)).^2) < max_visual_distance);
+        else
+            landmarks_mask = logical(ones(1,size(corresponding_landmarks,2)));
+        end
         query_cam_W = M_W_C2(1:3,4);
         plot3(corresponding_landmarks(1,landmarks_mask), corresponding_landmarks(2,landmarks_mask), ...
              corresponding_landmarks(3,landmarks_mask),'kx','LineWidth',2);
@@ -43,9 +44,10 @@ figure(1); clf
     subplot(2,4,5)
         plot(n_tracked_landmarks,'.-'); grid on;
         title('# tracked landmarks over last 20 frames')
+        
     subplot(2,4,6)
         plot(ground_guess(1,:),ground_guess(2,:),'.-')
-        title('full trajectory'); axis equal; grid on; 
-
+        title('full trajectory'); axis equal; grid on;
+        xlabel('x'); ylabel('z');
 
 end

@@ -15,24 +15,8 @@ function [inlier_query_keypoints, corresponding_landmarks, M_W_C2] =  ...
 %   corresponding_landmarks, 3xN 3D world point where i-th point corresponds to
 %   i-th inlier_query_keypoints, in world frame
 
-%% parameters 
-% control parameters
-plot_all_matches = true; 
-talkative = true;
-
-% keypoint selection and description
-harris_patch_size = 9;
-harris_kappa = 0.08;
-num_keypoints = 200;
-nonmaximum_supression_radius = 8;
-descriptor_radius = 9;
-match_lambda = 10;
-
-% RANSAC essential matrix
-n_iterations = 1000;
-pixel_tolerance = 2; 
-
-% calculations
+%% calculations 
+run('param.m');
 
 % bridge
 try
@@ -67,7 +51,7 @@ n_matched_keypoints = size(matched_database_keypoints,2);
 % C1 = database frame, C2 = query frame
 [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask] = ...
     estimateProjectionRANSAC(matched_database_keypoints, ...
-    matched_query_keypoints, K, n_iterations, pixel_tolerance);
+    matched_query_keypoints, K, n_iterations_matching_RANSAC, pixel_tolerance_RANSAC);
 n_matched_inlier_keypoints = sum(best_inlier_mask>0);
 inlier_query_keypoints = matched_query_keypoints(:,best_inlier_mask);
 
@@ -91,7 +75,7 @@ n_tracked_landmarks = n_matched_keypoints;
 ground_guess = [[0;0],M_W_C2([1,3],4)]; % [x,z]
 
 % talk
-if talkative
+if talkative_initialization
     fprintf('keypoints: \n\tmatched = %i, \n\tmatched inliers = %i\n\n', ...
         n_matched_keypoints,n_matched_inlier_keypoints)
     eulXYZ = rad2deg(rotm2eul(M_C2_C1(1:3,1:3),'XYZ'));
@@ -106,39 +90,4 @@ plotOverview(query_image, query_keypoints, ...
     matched_query_keypoints, matched_database_keypoints, best_inlier_mask, ...
     corresponding_landmarks, M_W_C2, n_tracked_landmarks, ground_guess)
 
-% %% plot 
-% 
-% % plot all inlier matches
-% if plot_all_matches 
-%     figure(1); clf
-%         imshow(query_image); hold on;
-%         plot(query_keypoints(2, :), query_keypoints(1, :), 'rx', 'Linewidth', 2);
-%         plotMatchedKeypoints(matched_query_keypoints(:,best_inlier_mask), ...
-%             matched_database_keypoints(:,best_inlier_mask), 2, 'g-')
-%         plotMatchedKeypoints(matched_query_keypoints(:,not(best_inlier_mask)), ...
-%             matched_database_keypoints(:,not(best_inlier_mask)), 1, 'c-')
-% end
-% 
-% 
-% % Visualize the 3-D scene
-% max_visual_distance = 25;
-% landmarks_mask = (sqrt(sum(P_W-mean(P_W,2)).^2) < max_visual_distance);
-% 
-% figure(2); clf;
-%     query_cam_W = M_W_C2(1:3,4);
-%     plot3(corresponding_landmarks(1,landmarks_mask), corresponding_landmarks(2,landmarks_mask), ...
-%          corresponding_landmarks(3,landmarks_mask),'kx','LineWidth',2);
-%     hold on; 
-%     plot3([0,query_cam_W(1)],[0,query_cam_W(2)],[0,query_cam_W(3)],'bx-')
-%     plotCoordinateFrame(eye(3),zeros(3,1), 10);
-% 
-%     plotCoordinateFrame(M_W_C2(1:3,1:3),M_W_C2(1:3,4), 10);
-% 
-%     xlabel('x'); ylabel('y'), zlabel('z');
-%     axis equal
-%     rotate3d on;
-%     grid on
-%     view([0,0])
-%     title('Trajectory of last 20 frames and landmarks')
-                 
 end
