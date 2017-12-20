@@ -16,8 +16,8 @@ function [R_C_W, t_C_W, query_keypoints, all_matches, best_inlier_mask, ...
 %   p_W_landmarks, 3xD, landmarks in real word coordinate frame
 %   K, 3x3 camera matrix
 % Output:
-%   R_C_W, 3x3 rotation matrix W-->C, calculated with all inliers
-%   t_C_W, 3x1 transformation vector W-->C, calculated with all inliers
+%   R_C_W, 3x3 rotation matrix, calculated with all inliers
+%   t_C_W, 3x1 transformation vector, calculated with all inliers
 %   query_keypoints, 2xQ, 
 %   all_matches, 1xQ, index of matched database image j at position i
 %   best_inlier_mask, 1xM, 1 if matched, 0 otherwise, M = num_matched

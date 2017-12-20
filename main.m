@@ -14,7 +14,7 @@ if ds == 0
     kitti_path = [path_to_main,'/../data/kitti'];
     assert(exist('kitti_path', 'var') ~= 0);
     ground_truth = load([kitti_path '/poses/00.txt']);
-    ground_truth = ground_truth(:, [end-8 end]);
+    ground_truth = ground_truth(2:end, [end-8 end]); % drop image0 to prevent index confusion
     last_frame = 4540;
     K = [7.188560000000e+02 0 6.071928000000e+02
         0 7.188560000000e+02 1.852157000000e+02
@@ -41,28 +41,52 @@ else
     assert(false);
 end
 
-%% Bootstrap
-bootstrap_frames = [1,3]; % suggested for Kitti: or [0,2]?
+% Bootstrap
 
 if ds == 0
-    img0 = imread([kitti_path '/00/image_0/' ...
-        sprintf('%06d.png',bootstrap_frames(1))]);
+    bootstrap_frames = [1,3];
     img1 = imread([kitti_path '/00/image_0/' ...
+        sprintf('%06d.png',bootstrap_frames(1))]);
+    img2 = imread([kitti_path '/00/image_0/' ...
         sprintf('%06d.png',bootstrap_frames(2))]);
 elseif ds == 1
-    img0 = rgb2gray(imread([malaga_path ...
+    bootstrap_frames = []; % tba
+    img1 = rgb2gray(imread([malaga_path ...
         '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
         left_images(bootstrap_frames(1)).name]));
-    img1 = rgb2gray(imread([malaga_path ...
+    img2 = rgb2gray(imread([malaga_path ...
         '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
         left_images(bootstrap_frames(2)).name]));
 elseif ds == 2
-    img0 = rgb2gray(imread([parking_path ...
-        sprintf('/images/img_%05d.png',bootstrap_frames(1))]));
+    bootstrap_frames = []; % tba
     img1 = rgb2gray(imread([parking_path ...
+        sprintf('/images/img_%05d.png',bootstrap_frames(1))]));
+    img2 = rgb2gray(imread([parking_path ...
         sprintf('/images/img_%05d.png',bootstrap_frames(2))]));
 else
     assert(false);
+end
+
+% initialization 
+[inlier_query_keypoints, corresponding_landmarks] = ...
+    initialization_patch_matching(img1, img2, K);
+
+%% plot ground truth
+plot_animated = true; 
+
+idx = 1:size(ground_truth,1); 
+if plot_animated
+    figure(2); clf; hold on; 
+        axis([-300,300,-100,500]); grid on;
+        xlabel('x'); ylabel('y'); title('ground truth')
+        for i = idx(1:end-1)
+            plot(ground_truth(i:i+1,1),ground_truth(i:i+1,2),'k-');
+            pause(0.001);
+        end
+else
+    figure(1); clf; hold on; grid on;
+        plot(ground_truth(idx,1),ground_truth(idx,2),'k-');    
+        xlabel('x'); ylabel('y'); title('ground truth');
 end
 
 %% Continuous operation
