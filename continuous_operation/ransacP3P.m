@@ -1,8 +1,9 @@
 function [R_C_W, t_C_W, max_num_inliers_history] = ransacP3P(X,P,K)
-
-estimate_DLT = true;
-tweaked_for_more = true
-best_error_sum = -1
+best_R = [];
+best_t = [];
+estimate_DLT = false;
+tweaked_for_more = true;
+best_error_sum = -1;
 % parameters
 if tweaked_for_more
     num_iterations = 1000;
@@ -12,7 +13,7 @@ end
 pixel_tolerance = 10;
 k = 3;
 % RANSAC
-first_time = true
+first_time = true;
 max_num_inliers = 0;
 max_num_inliers_history = zeros(1, num_iterations);
 for i = 1:num_iterations
@@ -40,38 +41,31 @@ for i = 1:num_iterations
         t_C_W_guess(:,:,ii+1) = -R_W_C_ii'*t_W_C_ii;
     end
 
-    % Count inliers:
-    for ii=1:4
-    projected_points = projectPoints(...
-        (R_C_W_guess(:,:,ii) * X) + ...
-        repmat(t_C_W_guess(:,:,ii), ...
-        [1 size(X, 2)]), K);
-    difference = P - projected_points;
-    errors = sum(difference.^2, 1);
-    is_inlier = errors < pixel_tolerance^2;
-    end
-
     if tweaked_for_more
         min_inlier_count = 30;
     else
         min_inlier_count = 6;
     end
+    % Count inliers:
+    for ii=1:4
+        projected_points = projectPoints(...
+            (R_C_W_guess(:,:,ii) * X) + ...
+            repmat(t_C_W_guess(:,:,ii), ...
+            [1 size(X, 2)]), K);
+        difference = P - projected_points;
+        errors = sum(difference.^2, 1);
+        is_inlier = errors < pixel_tolerance^2;
 
-    if nnz(is_inlier) > max_num_inliers && ...
-            nnz(is_inlier) >= min_inlier_count
-        max_num_inliers = nnz(is_inlier);        
-        best_inlier_mask = is_inlier;
-        
-        error_sum = sum(errors(best_inlier_mask));
-        if  first_time || error_sum < best_error_sum
-            best_error_sum = error_sum;
+        if nnz(is_inlier) > max_num_inliers && ...
+             nnz(is_inlier) >= min_inlier_count
+            max_num_inliers = nnz(is_inlier);        
+            best_inlier_mask = is_inlier;
             best_R = R_C_W_guess(:,:,ii);
             best_t = t_C_W_guess(:,:,ii);
-            first_time = false;
         end
     end
-
     max_num_inliers_history(i) = max_num_inliers;
+    
 end
 if estimate_DLT
     if max_num_inliers == 0
@@ -87,14 +81,7 @@ if estimate_DLT
 else % estimate with P3P
     R_C_W = best_R;
     t_C_W = best_t;
+    
 end 
-figure(5);
-subplot(1, 3, 3);
-scatter3(X(1, :), X(2, :), X(3, :), 5);
-set(gcf, 'GraphicsSmoothing', 'on');
-view(0,0);
-axis equal;
-axis vis3d;
-axis([-15 10 -10 5 -1 40]);
-plotCoordinateFrame(R_C_W', -R_C_W'*t_C_W, 2)
+
 end

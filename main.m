@@ -68,22 +68,36 @@ end
         
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
+prev_S = struct('P',0,'X',0,'C',0,'F',0,'T',0)
+prev_S.P = inlier_query_keypoints;
+prev_S.X = corresponding_landmarks;
+
 for i = range
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
     if ds == 0
         image = imread([kitti_path '/00/image_0/' sprintf('%06d.png',i)]);
+        prev_image = imread([kitti_path '/00/image_0/' sprintf('%06d.png',i-1)]);
     elseif ds == 1
         image = rgb2gray(imread([malaga_path ...
             '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
             left_images(i).name]));
+        prev_image = rgb2gray(imread([malaga_path ...
+            '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
+            left_images(i-1).name]));
     elseif ds == 2
         image = im2uint8(rgb2gray(imread([parking_path ...
             sprintf('/images/img_%05d.png',i)])));
+        prev_image = im2uint8(rgb2gray(imread([parking_path ...
+            sprintf('/images/img_%05d.png',i-1)])));
     else
         assert(false);
     end
+   
+    [S,T] = processFrame(image,prev_image,prev_S,K)
+    
     % Makes sure that plots refresh.    
     pause(0.01);
     
     prev_img = image;
+    prev_S = S
 end
