@@ -55,9 +55,6 @@ n_matched_keypoints = size(matched_database_keypoints,2);
 n_matched_inlier_keypoints = sum(best_inlier_mask>0);
 inlier_query_keypoints = matched_query_keypoints(:,best_inlier_mask);
 
-% drop points which are behind the camera
-P_C2 = P_C2(:,P_C2(3,:) > 0);
-
 % homogeneous transformation matrices
 M_C2_C1 = [R_C2_C1, t_C2_C1];
 M_C1_C2 = [R_C2_C1', -R_C2_C1'*t_C2_C1];
@@ -67,6 +64,11 @@ M_W_C2 = M_C1_C2;
 P_C1 = M_C1_C2*[P_C2; ones(1,size(P_C2, 2))];
 P_W = P_C1;
 corresponding_landmarks = P_W; 
+
+% drop points which are behind the camera
+drop_mask = find(P_C2(3,:) > 0);
+inlier_query_keypoints = inlier_query_keypoints(:,drop_mask);
+corresponding_landmarks = corresponding_landmarks(:,drop_mask);
 
 % number of tracked landmarks
 n_tracked_landmarks = n_matched_keypoints;
