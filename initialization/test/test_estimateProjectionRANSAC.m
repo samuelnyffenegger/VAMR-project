@@ -1,8 +1,8 @@
 %% Test estimateProjectionRANSAC
 clear all; close all; clc;
-path_to_file = fileparts(which('test_estimateFundamentalMatrix.m')); 
-path_to_code = [path_to_file,'/../..'];
-addpath(genpath(path_to_code));
+% path_to_file = fileparts(which('test_estimateFundamentalMatrix.m')); 
+% path_to_code = [path_to_file,'/../..'];
+% addpath(genpath(path_to_code));
 
 % load images
 database_image_colour = imread('initialization/test/fountain_1.jpg');
@@ -59,15 +59,26 @@ if plot_all_matches
     figure(1); clf; 
         imshow(query_image_colour); hold on;
         plot(query_keypoints(2, :), query_keypoints(1, :), 'rx', 'Linewidth', 2);
-        plotMatches(all_matches, query_keypoints, database_keypoints, 2, 'g-')
+        plotMatches(all_matches, query_keypoints, database_keypoints, 1, 'k-')
 end
 
-%% compute essential matrix in RANSAC fashion
+% compute essential matrix in RANSAC fashion
 
 [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, max_num_inliers_history] = ...
-    estimateProjectionRANSAC(matched_database_keypoints, matched_query_keypoints, K, 500, 5);
+    estimateProjectionRANSAC(matched_database_keypoints, matched_query_keypoints, K, 500, 2);
 
 M_C2_C1 = [R_C2_C1, t_C2_C1]
+
+% plot all inlier matches
+if plot_all_matches 
+    figure(1); clf; 
+        imshow(query_image_colour); hold on;
+        plot(query_keypoints(2, :), query_keypoints(1, :), 'rx', 'Linewidth', 2);
+        plotMatches(all_matches, query_keypoints, database_keypoints, 1, 'k-')
+        plotMatchedKeypoints(matched_query_keypoints(:,best_inlier_mask), ...
+            matched_database_keypoints(:,best_inlier_mask), 2, 'g-')
+end
+
 
 % convert point cloud in C2 frame into C1 (W) frame
 P_C1 = (R_C2_C1' * P_C2) + repmat(-R_C2_C1'*t_C2_C1,[1 size(P_C2, 2)]); 
@@ -106,5 +117,5 @@ figure(2); clf;
 % camera pose error analysis
 SSD_camera_pose = sum(abs(center_cam2_C1-center_myCam2_C1).^2)
 
-
+ 
 
