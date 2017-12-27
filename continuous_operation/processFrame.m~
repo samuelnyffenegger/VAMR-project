@@ -81,24 +81,22 @@ else
 
          angles_deg = acosd(dot(P_C1, P_C2) ./ (norm(P_C1,2) + norm(P_C2,2)));
 
-         triangulate_mask = bitand(angles_deg > alpha_deg, best_inlier_mask);
-         T_C_W = reshape(unique_transforms(:,i), 3,4);
-         T_W_C = [T_C_W(1:3,1:3)' -T_C_W(1:3,1:3)' * T_C_W(1:3,4); [0 0 0 1]];
+         triangulate_mask = angles_deg > alpha_deg && best_inlier_mask;
+         T_C_W = reshape(unique_transforms(i), 3,4);
+         T_W_C = [T_C_W(1:3,1:3)' - T_C_W(1:3,1:3)' * T_C_W(1:3,4); [0 0 0 1]];
          % add new triangulated points
-         new_points = P_C1(:, triangulate_mask);
-         new_points_W = T_W_C*[new_points; ones(1,size(new_points,2))];
-         S.X = [S.X new_points_W(1:3,:)];
+         S.X = [S.X T_W_C*P_C1(:, triangulate_mask)];
          S.P = [S.P matched_query_keypoints(:,triangulate_mask)];
     end
     
     if ~isempty(T_C_W) && ~isempty(matched_database_descriptors)
         unmatched_query_keypoints = query_keypoints(:,not(matched_query_mask));
         unmatched_query_descriptors = query_descriptors(:,not(matched_query_mask));
-        unmatched_query_transforms = repmat(T_C_W(:), 1, size(unmatched_query_keypoints,2));
+        unmatched_query_transforms = repmat(T_C_W, 1, size(unmatched_query_keypoints,2));
         % add matched database keypoints and newly found keypoints
-        S.C=[matched_database_keypoints(:,~triangulate_mask) unmatched_query_keypoints];
-        S.F=[matched_database_descriptors(:,~triangulate_mask) unmatched_query_descriptors];
-        S.T=[matched_database_transforms(:,~triangulate_mask) unmatched_query_transforms];
+        S.C=[matched_database_keypoints(~triangulate_mask) unmatched_query_keypoints];
+        S.F=[matched_database_descriptors(~triangulate_mask) unmatched_query_descriptors];
+        S.T=[matched_database_transforms(~triangulate_mask) unmatched_query_transforms];
         assert(size(S.C,2) == size(S.F,2));
         assert(size(S.F,2) == size(S.T,2));
     else

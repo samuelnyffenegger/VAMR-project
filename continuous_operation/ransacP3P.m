@@ -1,9 +1,8 @@
 function [R_C_W, t_C_W, max_num_inliers_history] = ransacP3P(X,P,K)
-best_R = [];
-best_t = [];
+
 estimate_DLT = false;
 tweaked_for_more = true;
-best_error_sum = -1;
+
 % parameters
 if tweaked_for_more
     num_iterations = 1000;
@@ -13,7 +12,8 @@ end
 pixel_tolerance = 10;
 k = 3;
 % RANSAC
-first_time = true;
+best_R = [];
+best_t=[];
 max_num_inliers = 0;
 max_num_inliers_history = zeros(1, num_iterations);
 for i = 1:num_iterations
@@ -47,23 +47,32 @@ for i = 1:num_iterations
         min_inlier_count = 6;
     end
     % Count inliers:
+    num_solutions = 0;
     for ii=1:4
-        projected_points = projectPoints(...
-            (R_C_W_guess(:,:,ii) * X) + ...
-            repmat(t_C_W_guess(:,:,ii), ...
-            [1 size(X, 2)]), K);
-        difference = P - projected_points;
-        errors = sum(difference.^2, 1);
-        is_inlier = errors < pixel_tolerance^2;
+        landmarks_in_new_system = R_C_W_guess(:,:,ii) * X + repmat(t_C_W_guess(:,:,ii), ...
+            [1 size(X, 2)]);
+        
+        % count points with negative z
+        num_points_behind_camera = sum(landmarks_in_new_system(3,:) < 0);
+        
+        if num_points_behind_camera == 0
+            num_solutions = num_solutions + 1;
+            projected_points = projectPoints(landmarks_in_new_system , K);
+        
+            difference = P - projected_points;
+            errors = sum(difference.^2, 1);
+            is_inlier = errors < pixel_tolerance^2;
 
-        if nnz(is_inlier) > max_num_inliers && ...
-             nnz(is_inlier) >= min_inlier_count
-            max_num_inliers = nnz(is_inlier);        
-            best_inlier_mask = is_inlier;
-            best_R = R_C_W_guess(:,:,ii);
-            best_t = t_C_W_guess(:,:,ii);
-        end
+            if nnz(is_inlier) > max_num_inliers && ...
+                 nnz(is_inlier) >= min_inlier_count
+                max_num_inliers = nnz(is_inlier);        
+                best_inlier_mask = is_inlier;
+                best_R = R_C_W_guess(:,:,ii);
+                best_t = t_C_W_guess(:,:,ii);
+            end
+        end  
     end
+    
     max_num_inliers_history(i) = max_num_inliers;
     
 end
