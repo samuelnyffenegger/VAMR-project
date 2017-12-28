@@ -1,7 +1,7 @@
 function [inlier_query_keypoints, corresponding_landmarks, M_W_C2] =  ...
     initialization_KLT(database_image, query_image, K)
 % [inlier_query_keypoints, corresponding_landmarks, M_W_C2] =  ...
-% initialization_patch_matching(query_image, database_image, K);
+%     initialization_KLT(database_image, query_image, K)
 % establishes keypoint correspondences using Lucas-Kanade tracking, estimates the
 % relative pose between frames and triangulates a point cloud of 3D
 % landmarks with RANSAC to filter the outliers
@@ -17,6 +17,7 @@ function [inlier_query_keypoints, corresponding_landmarks, M_W_C2] =  ...
 
 %% calculations 
 run('param.m');
+clc
 
 % bridge
 try
@@ -28,27 +29,30 @@ catch
 end
 
 % initialize
+num_keypoints = 5;
+% nonmaximum_supression_radius = 8;
 
 % get harris keypoints on first (database) image
 database_scores = harris(database_image, harris_patch_size, harris_kappa);
 database_keypoints = selectKeypoints(database_scores, num_keypoints, nonmaximum_supression_radius);
-% database_descriptors = describeKeypoints(database_image, database_keypoints, descriptor_radius);
+database_descriptors = describeKeypoints(database_image, database_keypoints, descriptor_radius);
 
-KLT = vision.PointTracker('MaxBidirectionalError', 1) % TODO: check out possible options 
-initialize(KLT, database_keypoints', database_image); 
-[query_keypoints, point_validity] = step(KLT, query_image);
+% track keypoints using Lucas Kanade tracking (KLT)
+tracker = vision.PointTracker('MaxBidirectionalError',1,'BlockSize',[,1]); 
+initialize(tracker,fliplr(database_keypoints'),database_image);
+[query_keypoints, point_validity] = step(tracker,query_image);
+
+printmat([fliplr(database_keypoints'),query_keypoints,point_validity],'keypoints','#1 #2 #3 #4 #5','db_x db_y qr_x qr_y validity')
+query_keypoints = fliplr(query_keypoints)';
 
 % plot all matches
-plot_tracking = false;
+plot_tracking = true;
 if plot_tracking 
     figure(1); clf; 
-        imshow(query_image); hold on;
-        plot(database_keypoints(2, :), prev_S.P(1, :), 'rx', 'Linewidth', 2);
-        plotMatches([1:size(S.P,2)], prev_S.P(:,point_validity), S.P, 2, 'g-');
-        pause(0.001);
+        imshow(query_image); hold on;  
+        plot(query_keypoints(2, :), query_keypoints(1, :), 'rx', 'Linewidth', 2);
+        plotMatches([1:size(query_keypoints(:,point_validity),2)], database_keypoints(:,point_validity), query_keypoints(:,point_validity), 2, 'g-');
 end
-
-
 
 %% initialization_patch_matching
 % find harris keypoints and patch descriptors
