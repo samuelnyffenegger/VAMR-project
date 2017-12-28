@@ -34,19 +34,17 @@ database_scores = harris(database_image, harris_patch_size, harris_kappa);
 database_keypoints = selectKeypoints(database_scores, num_keypoints, nonmaximum_supression_radius);
 % database_descriptors = describeKeypoints(database_image, database_keypoints, descriptor_radius);
 
-KLT = vision.PointTracker('MaxBidirectionalError', 1); % TODO: check out possible options 
+KLT = vision.PointTracker('MaxBidirectionalError', 1) % TODO: check out possible options 
 initialize(KLT, database_keypoints', database_image); 
 [query_keypoints, point_validity] = step(KLT, query_image);
-query_keypoints = query_keypoints';
-n_tracked = sum(point_validity)
 
 % plot all matches
-plot_tracking = true;
+plot_tracking = false;
 if plot_tracking 
     figure(1); clf; 
         imshow(query_image); hold on;
-        plot(database_keypoints(2, :), database_keypoints(1, :), 'rx', 'Linewidth', 2);
-        plotMatches([1:size(query_keypoints(:,point_validity),2)], database_keypoints(:,point_validity), query_keypoints(:,point_validity), 2, 'g-');
+        plot(database_keypoints(2, :), prev_S.P(1, :), 'rx', 'Linewidth', 2);
+        plotMatches([1:size(S.P,2)], prev_S.P(:,point_validity), S.P, 2, 'g-');
         pause(0.001);
 end
 
