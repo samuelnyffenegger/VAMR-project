@@ -5,7 +5,7 @@ tweaked_for_more = true;
 
 % parameters
 if tweaked_for_more
-    num_iterations = 1000;
+    num_iterations = 2000;
 else
     num_iterations = 200;
 end
@@ -24,11 +24,8 @@ for i = 1:num_iterations
 
     % Backproject keypoints to unit bearing vectors.
     normalized_bearings = K\[P_sample; ones(1, 3)];
-    for ii = 1:3
-        normalized_bearings(:, ii) = normalized_bearings(:, ii) / ...
-            norm(normalized_bearings(:, ii), 2);
-    end
-
+    normalized_bearings = normalized_bearings ./ vecnorm(normalized_bearings);
+    
     poses = p3p(X_sample, normalized_bearings);
 
     % Decode p3p output
@@ -42,7 +39,7 @@ for i = 1:num_iterations
     end
 
     if tweaked_for_more
-        min_inlier_count = 30;
+        min_inlier_count = 20;
     else
         min_inlier_count = 6;
     end

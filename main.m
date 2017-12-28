@@ -69,7 +69,7 @@ end
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
 prev_S = struct('P',[],'X',[],'C',[],'F',[],'T',[])
-prev_S.P = flipud(inlier_query_keypoints);
+prev_S.P = inlier_query_keypoints;
 prev_S.X = corresponding_landmarks;
     figure(2);
      scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'b');
@@ -77,8 +77,8 @@ prev_S.X = corresponding_landmarks;
     view(0,0);
     axis equal;
     axis vis3d;
-    axis([-40 10 -10 5 -1 60]);
-for i = 46:75%range
+    axis([-20 30 -10 5 -10 60]);
+for i = range
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
     if ds == 0
         image = imread([kitti_path '/00/image_0/' sprintf('%06d.png',i)]);
@@ -107,12 +107,13 @@ for i = 46:75%range
     if plot
         hold on
         if all(size(R_C_W) > 0) && all(size(t_C_W) > 0)
-            new_X = setdiff(S.X', prev_S.X', 'rows')'
-            if ~isempty(new_X)
-                scatter3(new_X(1, :), new_X(2, :), new_X(3, :), 5, 'r');
-            end
+            a = 'update plot'
             plotCoordinateFrame(R_C_W', -R_C_W'*t_C_W, 2);
             view(0,0);
+        end
+         new_X = setdiff(S.X', prev_S.X', 'rows')'
+        if ~isempty(new_X)
+            scatter3(new_X(1, :), new_X(2, :), new_X(3, :), 5, 'r');
         end
     end
     t_C_W
