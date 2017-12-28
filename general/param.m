@@ -14,6 +14,10 @@ match_lambda = 10;
 n_iterations_matching_RANSAC = 1000;
 pixel_tolerance_RANSAC = 3; 
 
+% KLT with RANSAC
+max_bidirectional_error = 1;
+KLT_max_iterations = 30;
+
 %% dataset specific tuning parameters
 ds = 0;         % dataset - 0: KITTI, 1: Malaga, 2: parking
 switch ds

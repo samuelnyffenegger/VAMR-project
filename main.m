@@ -62,10 +62,14 @@ else
     assert(false);
 end
 
-%% initialization 
+%% initialization patch matching
 [inlier_query_keypoints, corresponding_landmarks, M_W_C2] = ...
     initialization_patch_matching(img1, img2, K);
         
+%% initialization KLT
+[inlier_query_keypoints, corresponding_landmarks, M_W_C2] = ...
+    initialization_KLT(img1, img2, K);
+
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
 for i = range
