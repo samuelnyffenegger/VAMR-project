@@ -17,13 +17,20 @@ function [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, ...
 % Output:
 %   R_C2_C1, rotaion matrix frame C1 in C2
 %   t_C2_C1, translation vector frame C1 in C2
-%   P_C2, 3xN real world point cloud of triangulated inliers in query frame (C2)
+%   P_C2, 3xM real world point cloud of triangulated inliers in query frame (C2)
+%         where M is the number of RANSAC_inliers 
 %   best_inlier_mask, 1xN, mask whether matched keypoint is an RANSAC inlier (1)
 %   max_num_inliers_history, maximum of number of inliers
 
 
 %% calculations
 run('param.m');
+
+% bridge 
+try
+    matched_database_keypoints = matched_database_keypoints(:,transform_mask);
+    matched_query_keypoints = matched_query_keypoints(:,transform_mask);
+end
 
 % control parameters
 plot_sample_keypoints = false;
@@ -96,12 +103,13 @@ for i = 1:n_iterations
     max_num_inliers_history(i) = max_num_inliers;
 end
 
-% final point cloud triangulation and pose estimation using inliers
+%% final point cloud triangulation and pose estimation using inliers
 if max_num_inliers == 0
     warning('RANSAC did not find enough inliers');
     R_C2_C1 = [];
     t_C2_C1 = [];
     P_C2 = [];
+    best_inlier_mask = [];
 else
     % calculate fundamental matrix
     inlier_database_keypoints_homog = [matched_database_keypoints_uv(:,best_inlier_mask); ones(1,max_num_inliers)];
