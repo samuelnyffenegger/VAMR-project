@@ -5,7 +5,7 @@ talkative_initialization = true;
 % keypoint selection and description
 harris_patch_size = 9;
 harris_kappa = 0.08;
-num_keypoints = 1000;
+num_keypoints = 400;
 nonmaximum_supression_radius = 8;
 descriptor_radius = 9;
 match_lambda = 10;
