@@ -14,9 +14,9 @@ S.X=prev_S.X(:, point_validity); % only keep the points that were tracked
 S.P=flipud(P_new(point_validity,:)');
 
 % plot all matches
-plot_tracking = false;
+plot_tracking = true;
 if plot_tracking 
-    figure; clf; 
+    figure(1); clf; 
         imshow(I); hold on;
         plot(prev_S.P(2, :), prev_S.P(1, :), 'rx', 'Linewidth', 2);
         plotMatches([1:size(S.P,2)], prev_S.P(:,point_validity), S.P, 2, 'g-');
@@ -25,7 +25,6 @@ end
 
 % localize with P3P and ransac
 [R_C_W, t_C_W, max_num_inliers_history] = ransacP3P(S.X,flipud(S.P),K); % looks like ransacP3P nees switched x and y too
-max_num_inliers_history(end);
 T_C_W = [R_C_W, t_C_W];
 T_C_W = T_C_W(:);
 
@@ -33,7 +32,7 @@ T_C_W = T_C_W(:);
 % parameters 
 harris_patch_size = 9;
 harris_kappa = 0.08;
-num_keypoints = 300;
+num_keypoints = 200;
 nonmaximum_supression_radius = 8;
 descriptor_radius = 9;
 match_lambda = 5;
@@ -68,8 +67,8 @@ else
     S.T = matched_database_transforms;
          
     
-    %% Triangulate new points
-    alpha_deg = 5;
+    % Triangulate new points
+    alpha_deg = 1;
     n_iterations = 2000;
     pixel_tolerance = 10;
     
@@ -78,26 +77,34 @@ else
     unique_transforms = unique(matched_database_transforms', 'rows')';
     
     for i=1:size(unique_transforms,2)
-        transform_mask = all(matched_database_transforms == unique_transforms(:,i),1);
+        transform_mask = all(S.T == unique_transforms(:,i),1);
         
-        if sum(transform_mask) < 30
-            sprintf('few points, ignore this set')
+        if sum(transform_mask) < 50
+            sprintf('few points, ignore this set') % TODO also remove?
             sum(transform_mask)
             continue
         end
-        sprintf('trangulate new points')
+        sprintf('trangulate new points and check angles')
         sum(transform_mask)
         [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, ...
         max_num_inliers_history] = estimateProjectionRANSAC(matched_database_keypoints(:,transform_mask), ...
         matched_query_keypoints(:,transform_mask), K, n_iterations, pixel_tolerance);
-    
+        t_C2_C1
+        R_C2_C1
+        
+        % drop points behind camera
+        behind_camera_mask = P_C2(3, :) < 0;
+        
          % triangulated points in original coordinate frame 
          P_C1 = R_C2_C1' * P_C2 - R_C2_C1' * t_C2_C1;
          P_C1_in_C2 = P_C2 - t_C2_C1; % points from C1 to P in frame C2.
 
-         angles_deg = acosd(dot(P_C1_in_C2, P_C2) ./ (vecnorm(P_C1_in_C2,2) .* vecnorm(P_C2,2)))
+         angles_deg = acosd(dot(P_C1_in_C2, P_C2) ./ (vecnorm(P_C1_in_C2,2) .* vecnorm(P_C2,2)));
 
-         triangulate_mask = angles_deg > alpha_deg;
+         triangulate_mask = bitand(abs(angles_deg) > alpha_deg, not(behind_camera_mask));
+         sprintf('triangulated successfully so many points:')
+         sum(triangulate_mask)
+         
          T_C_W_i = reshape(unique_transforms(:,i), 3,4);
          T_W_C_i = [T_C_W_i(1:3,1:3)' -T_C_W_i(1:3,1:3)' * T_C_W_i(1:3,4); [0 0 0 1]];
          
@@ -105,11 +112,14 @@ else
          new_points = P_C1(:, triangulate_mask);
          new_points_W = T_W_C_i*[new_points; ones(1,size(new_points,2))];
          S.X = [S.X new_points_W(1:3,:)];
-         S.P = [S.P matched_query_keypoints(:,triangulate_mask)]; % TODO is this correct?
+         matched_query_keypoints_i = matched_query_keypoints(:,transform_mask);
+         S.P = [S.P matched_query_keypoints_i(:,triangulate_mask)];
          
-         % remove points that were triangulated
-         % TODO
-         
+         transform_cols = find(transform_mask);
+         triangulated_cols = transform_cols(triangulate_mask);
+         S.C(:, triangulated_cols) = [];
+         S.F(:, triangulated_cols) = [];
+         S.T(:, triangulated_cols) = [];      
     end
     
     % and new key points to F,C,T
@@ -117,16 +127,12 @@ else
         unmatched_query_keypoints = query_keypoints(:,not(matched_query_mask));
         unmatched_query_descriptors = query_descriptors(:,not(matched_query_mask));
         unmatched_query_transforms = repmat(T_C_W(:), 1, size(unmatched_query_keypoints,2));
-        % add matched database keypoints and newly found keypoints
-        S.C=[matched_database_keypoints unmatched_query_keypoints];
-        S.F=[matched_database_descriptors unmatched_query_descriptors];
-        S.T=[matched_database_transforms unmatched_query_transforms];
+        
+        S.C=[S.C unmatched_query_keypoints];
+        S.F=[S.F unmatched_query_descriptors];
+        S.T=[S.T unmatched_query_transforms];
         assert(size(S.C,2) == size(S.F,2));
         assert(size(S.F,2) == size(S.T,2));
-    else
-        S.C=[matched_database_keypoints];
-        S.F=[matched_database_descriptors];
-        S.T=[matched_database_transforms];
     end
     
 end

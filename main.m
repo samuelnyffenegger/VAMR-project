@@ -105,6 +105,7 @@ for i = range
     % plot
     plot = true;
     if plot
+        figure(2);
         hold on
         if all(size(R_C_W) > 0) && all(size(t_C_W) > 0)
             a = 'update plot'
