@@ -62,11 +62,11 @@ else
     assert(false);
 end
 
-%% initialization patch matching
-[inlier_query_keypoints, corresponding_landmarks, M_W_C2] = ...
-    initialization_patch_matching(img1, img2, K);
+% %% initialization patch matching
+% [inlier_query_keypoints, corresponding_landmarks, M_W_C2] = ...
+%     initialization_patch_matching(img1, img2, K);
         
-%% initialization KLT
+% initialization KLT
 [inlier_query_keypoints, corresponding_landmarks, M_W_C2] = ...
     initialization_KLT(img1, img2, K);
 

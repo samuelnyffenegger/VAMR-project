@@ -11,12 +11,13 @@ descriptor_radius = 9;
 match_lambda = 10;
 
 % patch matching with RANSAC
-n_iterations_matching_RANSAC = 1000;
+n_iterations_matching_RANSAC = 50;
 pixel_tolerance_RANSAC = 3; 
 
 % KLT with RANSAC
 max_bidirectional_error = 1;
 KLT_max_iterations = 30;
+% patch size for KLT is same as harris patch size
 
 %% dataset specific tuning parameters
 ds = 0;         % dataset - 0: KITTI, 1: Malaga, 2: parking
@@ -24,9 +25,10 @@ switch ds
     case 0 % Kitti parameters
         bootstrap_frames = [0,2]; 
         % bootstrap_frames = [100,102];
-
+        % bootstrap_frames = [200,202];
+       
     case 1 % Malaga parameters
-        bootstrap_frames = []; % tba
+        bootstrap_frames = [0,2]; 
 
     case 2 % parking parameters
         bootstrap_frames = [40,45]; 
