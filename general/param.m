@@ -20,7 +20,7 @@ KLT_max_iterations = 30;
 % patch size for KLT is same as harris patch size
 
 %% dataset specific tuning parameters
-ds = 0;         % dataset - 0: KITTI, 1: Malaga, 2: parking
+ds = 3;         % dataset - 0: KITTI, 1: Malaga, 2: parking
 switch ds
     case 0 % Kitti parameters
         bootstrap_frames = [0,2]; 
@@ -33,6 +33,9 @@ switch ds
     case 2 % parking parameters
         bootstrap_frames = [40,45]; 
     
+    case 3 % alpha & omega
+        bootstrap_frames = [5,6];
+        
     otherwise
         warning('choose dataset!')
 end

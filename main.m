@@ -36,6 +36,12 @@ elseif ds == 2
      
     ground_truth = load([parking_path '/poses.txt']);
     ground_truth = ground_truth(:, [end-8 end]);
+    
+elseif ds == 3
+    alpha_omega_path = [path_to_main,'/../data/alpha_omega/'];
+    run([alpha_omega_path,'Calib_Results.m']);
+    K = [fc(1),0,cc(1); 0,fc(2),cc(2); 0,0,1];   
+    
 else
     assert(false);
 end
@@ -58,10 +64,16 @@ elseif ds == 2
         sprintf('/images/img_%05d.png',bootstrap_frames(1))]));
     img2 = rgb2gray(imread([parking_path ...
         sprintf('/images/img_%05d.png',bootstrap_frames(2))]));
+elseif ds == 3
+    img1 = rgb2gray(imread([alpha_omega_path ...
+        sprintf('/img_%02d.JPG',bootstrap_frames(1))]));
+    img2 = rgb2gray(imread([alpha_omega_path ...
+        sprintf('/img_%02d.JPG',bootstrap_frames(2))]));    
 else
     assert(false);
 end
 
+%
 % %% initialization patch matching
 % [inlier_query_keypoints, corresponding_landmarks, M_W_C2] = ...
 %     initialization_patch_matching(img1, img2, K);
