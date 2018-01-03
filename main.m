@@ -6,6 +6,7 @@
 %% Setup
 clear all; clc;
 addpath(genpath(cd));
+
 run('param.m');
 
 path_to_main = fileparts(which('main.m')); 
@@ -41,6 +42,11 @@ elseif ds == 3
     alpha_omega_path = [path_to_main,'/../data/alpha_omega/'];
     run([alpha_omega_path,'Calib_Results.m']);
     K = [fc(1),0,cc(1); 0,fc(2),cc(2); 0,0,1];   
+
+elseif ds == 4
+    dubi_calib1_set1_path = [path_to_main,'/../data/Dubendorf/calib1/set1/'];
+    run([dubi_calib1_set1_path,'../calibration/Calib_Results.m']);
+    K = [fc(1),0,cc(1); 0,fc(2),cc(2); 0,0,1];   
     
 else
     assert(false);
@@ -69,6 +75,11 @@ elseif ds == 3
         sprintf('/img_%02d.JPG',bootstrap_frames(1))]));
     img2 = rgb2gray(imread([alpha_omega_path ...
         sprintf('/img_%02d.JPG',bootstrap_frames(2))]));    
+elseif ds == 4
+    img1 = rgb2gray(imread([dubi_calib1_set1_path ...
+        sprintf('img%04d.JPG',bootstrap_frames(1))]));
+    img2 = rgb2gray(imread([dubi_calib1_set1_path ...
+        sprintf('img%04d.JPG',bootstrap_frames(2))]));    
 else
     assert(false);
 end
@@ -80,7 +91,8 @@ end
         
 % initialization KLT
 [inlier_query_keypoints, corresponding_landmarks, M_W_C2] = ...
-    initialization_KLT(img1, img2, K);
+  initialization_KLT(img1, img2, K);
+M_W_C2
 
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
