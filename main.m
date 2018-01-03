@@ -3,6 +3,13 @@
 %   Samuel Nyffenegger, Sebastian Ratz
 %   Nov 2017 - Jan 2018
 
+%% ToDo
+%   init tracking
+%   cont tracking
+%   cont supression
+%   param tuning
+%   new dataset
+
 %% Setup
 clear all; clc;
 addpath(genpath(cd));
