@@ -31,6 +31,10 @@ end
 T_C_W = [R_C_W, t_C_W];
 T_C_W = T_C_W(:);
 
+if isempty(R_C_W) || isempty(t_C_W)
+    assert(false)
+end
+
 %% track keypoints
 % find harris keypoints and patch descriptors
 query_scores = harris(I, harris_patch_size_cont, harris_kappa_cont);
@@ -46,7 +50,7 @@ else
     KLT_triang = vision.PointTracker('MaxBidirectionalError', 1); % TODO: check out possible options 
     initialize(KLT_triang, fliplr(prev_S.C'), prev_I); 
     [C_new,p_validity] = step(KLT_triang,I);
-    S.C=flipud(C_new(p_validity,:)');
+    S.C= flipud(C_new(p_validity,:)');
     S.F = prev_S.F(:,p_validity);
     S.T=prev_S.T(:, p_validity); % only keep the points that were tracked
     
@@ -77,18 +81,22 @@ else
         
         [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, ...
         max_num_inliers_history] = estimateProjectionRANSAC(S.F(:,transform_mask), ...
-        S.C(:,transform_mask), K, n_iterations_triangulation, pixel_tolerance);
+        S.C(:,transform_mask), K, n_iterations_triang, pixel_tolerance);
         
         % rescale translation
         T_C_W_i = reshape(unique_transforms(:,i), 3,4);
         T_W_C_i = [T_C_W_i(1:3,1:3)' -T_C_W_i(1:3,1:3)'*T_C_W_i(1:3,4)];
-       
+        
         t_W_C_i = T_W_C_i(1:3,4); % position at first frame
         t_W_C = - R_C_W' * t_C_W; % position now
-        norm_t_localization = norm(t_W_C - t_W_C_i);
+        t_C2_C1_localization = t_W_C - t_W_C_i;
+        norm_t_localization = norm(t_C2_C1_localization);
         norm_t_triangulation = norm(t_C2_C1);
         
         scale_correction = norm_t_localization / norm_t_triangulation;
+        
+        unit_t_triang = t_C2_C1/norm_t_triangulation
+        unit_t_localization = t_C2_C1_localization / norm_t_localization
         
         t_C2_C1 = scale_correction * t_C2_C1;
         P_C2 = P_C2 * scale_correction;
@@ -106,8 +114,13 @@ else
          P_C1_in_C2 = P_C2 - t_C2_C1; % points from C1 to P in frame C2.
 
          angles_deg = acosd(dot(P_C1_in_C2, P_C2) ./ (vecnorm(P_C1_in_C2,2) .* vecnorm(P_C2,2)));
-
-         triangulate_mask = bitand(abs(angles_deg) > alpha_deg, not(behind_camera_mask));
+         angles_mask = abs(angles_deg) > alpha_deg;
+         
+         if sum(angles_mask)/size(angles_mask,2) > 0.5
+            triangulate_mask = bitand(angles_mask, not(behind_camera_mask));
+         else
+             triangulate_mask = logical(zeros(1,size(angles_mask,2)));
+         end
          
          % add new triangulated points
          new_points = P_C1(:, triangulate_mask);
@@ -142,7 +155,7 @@ else
         
         new_keypoints = query_keypoints(:,bitand(mask_C,mask_P));
         S.C= [S.C new_keypoints];
-        S.F = [S.F new_keypoints];
+        S.F =[S.F new_keypoints];
         S.T= [S.T repmat(T_C_W(:), [1, size(new_keypoints,2)])];
         assert(size(S.C,2) == size(S.T,2));
         
