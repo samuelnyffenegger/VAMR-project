@@ -46,9 +46,9 @@ else
     KLT_triang = vision.PointTracker('MaxBidirectionalError', 1); % TODO: check out possible options 
     initialize(KLT_triang, fliplr(prev_S.C'), prev_I); 
     [C_new,p_validity] = step(KLT_triang,I);
-    S.T=prev_S.T(:, p_validity); % only keep the points that were tracked
     S.C=flipud(C_new(p_validity,:)');
     S.F = prev_S.F(:,p_validity);
+    S.T=prev_S.T(:, p_validity); % only keep the points that were tracked
     
     if plot_tracking 
     figure(3);
@@ -76,7 +76,7 @@ else
         end
         
         [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, ...
-        max_num_inliers_history] = estimateProjectionRANSAC(prev_S.F(:,transform_mask), ...
+        max_num_inliers_history] = estimateProjectionRANSAC(S.F(:,transform_mask), ...
         S.C(:,transform_mask), K, n_iterations_triangulation, pixel_tolerance);
         
         % rescale translation
@@ -120,7 +120,7 @@ else
             figure(2);
             hold on
             new_P = matched_query_keypoints_i(:,triangulate_mask);
-            plot(new_P(2,:), new_P(1, :), 'bo', 'Linewidth', 1);
+            plot(new_P(2,:), new_P(1, :), 'bo', 'Linewidth', 2);
             hold off
          end
             
@@ -141,9 +141,9 @@ else
         [~, mask_P] = nonMaxSuppression(query_keypoints, S.P, nonmaximum_supression_radius_cont, size(I)); 
         
         new_keypoints = query_keypoints(:,bitand(mask_C,mask_P));
-        S.C=[S.C new_keypoints];
+        S.C= [S.C new_keypoints];
         S.F = [S.F new_keypoints];
-        S.T=[S.T repmat(T_C_W(:), [1, size(new_keypoints,2)])];
+        S.T= [S.T repmat(T_C_W(:), [1, size(new_keypoints,2)])];
         assert(size(S.C,2) == size(S.T,2));
         
         sprintf('added new keypoints: %i', size(new_keypoints,2))
