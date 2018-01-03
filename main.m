@@ -3,6 +3,13 @@
 %   Samuel Nyffenegger, Sebastian Ratz
 %   Nov 2017 - Jan 2018
 
+%% ToDo
+%   init tracking
+%   cont tracking
+%   cont supression
+%   param tuning
+%   new dataset
+
 %% Setup
 clear all; clc;
 addpath(genpath(cd));
@@ -96,22 +103,76 @@ M_W_C2
 
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
+prev_S = struct('P',[],'X',[],'C',[],'F',[],'T',[])
+prev_S.P = inlier_query_keypoints;
+prev_S.X = corresponding_landmarks;
+
+figure(1);
+% plot initial landmarks
+scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'b');
+set(gcf, 'GraphicsSmoothing', 'on');
+view(0,0);
+axis equal;
+axis vis3d;
+axis([-20 30 -10 5 -10 60]);
+
 for i = range
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
     if ds == 0
         image = imread([kitti_path '/00/image_0/' sprintf('%06d.png',i)]);
+        prev_image = imread([kitti_path '/00/image_0/' sprintf('%06d.png',i-1)]);
     elseif ds == 1
         image = rgb2gray(imread([malaga_path ...
             '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
             left_images(i).name]));
+        prev_image = rgb2gray(imread([malaga_path ...
+            '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
+            left_images(i-1).name]));
     elseif ds == 2
         image = im2uint8(rgb2gray(imread([parking_path ...
             sprintf('/images/img_%05d.png',i)])));
+        prev_image = im2uint8(rgb2gray(imread([parking_path ...
+            sprintf('/images/img_%05d.png',i-1)])));
     else
         assert(false);
     end
+   
+    % do localization and triangulation
+    [S, R_C_W, t_C_W] = processFrame(image,prev_image,prev_S, K);
+    
+    % plot
+    plot = true;
+    if plot
+        figure(1);
+    
+        hold on
+        if all(size(R_C_W) > 0) && all(size(t_C_W) > 0)
+            plotCoordinateFrame(R_C_W', -R_C_W'*t_C_W, 2);
+            view(0,0);
+        end
+         new_X = setdiff(S.X', prev_S.X', 'rows')';
+        if ~isempty(new_X)
+            scatter3(new_X(1, :), new_X(2, :), new_X(3, :), 5, 'r');
+        end
+        if true
+        old_X = intersect(prev_S.X', S.X', 'rows')';
+         scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'b');
+        set(gcf, 'GraphicsSmoothing', 'on');
+        view(0,0);
+        axis equal;
+        axis vis3d;
+        axis([-20 30 -10 5 -10 60]);
+        end
+         hold off
+    end
+    
+    if isempty(t_C_W)
+        sprintf('translation is empty. failed to localize.')
+    end
+
     % Makes sure that plots refresh.    
     pause(0.01);
-    
+
     prev_img = image;
+    prev_S = S
 end
