@@ -15,7 +15,7 @@ clear all; clc;
 addpath(genpath(cd));
 
 run('param.m');
-
+%
 path_to_main = fileparts(which('main.m')); 
 if ds == 0
     kitti_path = [path_to_main,'/../data/kitti'];
@@ -55,6 +55,18 @@ elseif ds == 4
     run([dubi_calib1_set1_path,'../calibration/Calib_Results.m']);
     K = [fc(1),0,cc(1); 0,fc(2),cc(2); 0,0,1];   
     
+elseif ds == 5
+    duckietown_path_set1 = [path_to_main,'/../data/duckietown/set1/'];
+    K = [361.58100437113353, 0.0, 317.9127184663754; ...
+        0.0, 355.90465554417597, 243.37300302681604; ...
+        0.0, 0.0, 1.0];
+    last_frame = 3415;
+elseif ds == 6
+    duckietown_path_set2 = [path_to_main,'/../data/duckietown/set2/'];
+    K = [361.58100437113353, 0.0, 317.9127184663754; ...
+        0.0, 355.90465554417597, 243.37300302681604; ...
+        0.0, 0.0, 1.0];
+    last_frame = 2952;
 else
     assert(false);
 end
@@ -82,16 +94,29 @@ elseif ds == 3
         sprintf('/img_%02d.JPG',bootstrap_frames(1))]));
     img2 = rgb2gray(imread([alpha_omega_path ...
         sprintf('/img_%02d.JPG',bootstrap_frames(2))]));    
+
 elseif ds == 4
     img1 = rgb2gray(imread([dubi_calib1_set1_path ...
         sprintf('img%04d.JPG',bootstrap_frames(1))]));
     img2 = rgb2gray(imread([dubi_calib1_set1_path ...
-        sprintf('img%04d.JPG',bootstrap_frames(2))]));    
+        sprintf('img%04d.JPG',bootstrap_frames(2))]));
+
+elseif ds == 5
+    img1 = rgb2gray(imread([duckietown_path_set1 ...
+        sprintf('%05d.JPG',bootstrap_frames(1))]));
+    img2 = rgb2gray(imread([duckietown_path_set1 ...
+        sprintf('%05d.JPG',bootstrap_frames(2))]));
+elseif ds == 6
+    img1 = rgb2gray(imread([duckietown_path_set2 ...
+        sprintf('%05d.JPG',bootstrap_frames(1))]));
+    img2 = rgb2gray(imread([duckietown_path_set2 ...
+        sprintf('%05d.JPG',bootstrap_frames(2))]));
+            
 else
     assert(false);
 end
 
-%
+
 % %% initialization patch matching
 % [inlier_query_keypoints, corresponding_landmarks, M_W_C2] = ...
 %     initialization_patch_matching(img1, img2, K);
@@ -133,6 +158,19 @@ for i = range
             sprintf('/images/img_%05d.png',i)])));
         prev_image = im2uint8(rgb2gray(imread([parking_path ...
             sprintf('/images/img_%05d.png',i-1)])));
+        
+    elseif ds == 5
+        image = rgb2gray(imread([duckietown_path_set1 ...
+            sprintf('%05d.JPG',i)]));
+        prev_image = rgb2gray(imread([duckietown_path_set1 ...
+            sprintf('%05d.JPG',i-1)]));
+
+    elseif ds == 6
+        image = rgb2gray(imread([duckietown_path_set2 ...
+            sprintf('%05d.JPG',i)]));
+        prev_image = rgb2gray(imread([duckietown_path_set2 ...
+            sprintf('%05d.JPG',i-1)]));
+
     else
         assert(false);
     end
