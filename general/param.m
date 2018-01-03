@@ -5,7 +5,7 @@ talkative_initialization = true;
 % keypoint selection and description
 harris_patch_size = 9;
 harris_kappa = 0.08;
-num_keypoints = 1000;
+num_keypoints = 600; %better tracking implemented (KLT and non max supp)
 nonmaximum_supression_radius = 8;
 descriptor_radius = 9;
 match_lambda = 10;
@@ -20,7 +20,7 @@ KLT_max_iterations = 30;
 % patch size for KLT is same as harris patch size
 
 %% dataset specific tuning parameters
-ds = 6;         % dataset - 0: KITTI, 1: Malaga, 2: parking
+ds = 2;         % dataset - 0: KITTI, 1: Malaga, 2: parking
 switch ds
     case 0 % Kitti parameters
         bootstrap_frames = [0,2]; 
@@ -56,8 +56,8 @@ end
 plot_tracking = true;
 
 % Triangulate new points
-alpha_deg = 2; % angle between camera views to allow triangulation
-n_iterations_triangulation = 100;
+alpha_deg = 5; % angle between camera views to allow triangulation
+n_iterations_triangulation = 50;
 pixel_tolerance =2;
 min_points = 25; % minimum numbers of points required for triangulation
 
@@ -65,8 +65,7 @@ min_points = 25; % minimum numbers of points required for triangulation
 harris_patch_size_cont = 9;
 harris_kappa_cont = 0.08;
 num_keypoints_cont = 300;
-nonmaximum_supression_radius_cont = 8;
+nonmaximum_supression_radius_cont = 10;
 descriptor_radius_cont = 9;
-match_lambda_cont = 5;
 
         

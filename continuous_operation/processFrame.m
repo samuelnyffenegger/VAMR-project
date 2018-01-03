@@ -3,7 +3,7 @@ function [S, R_C_W, t_C_W] = processFrame(I,prev_I,prev_S,K)
 % S.P is 2xN - keypoints
 % S.X is 3xN - 3D landmarks
 % S.C is 2xK - new candidtate keypoints
-% S.F is patch_sizexK - corresponding descriptors at first occurence
+% S.F is 2xK - new canditate keypoints at first occurence
 % S.T is 12xK - corresponding T at first occurence
 
 run('param.m');
@@ -32,50 +32,38 @@ T_C_W = [R_C_W, t_C_W];
 T_C_W = T_C_W(:);
 
 %% track keypoints
-
 % find harris keypoints and patch descriptors
 query_scores = harris(I, harris_patch_size_cont, harris_kappa_cont);
 query_keypoints = selectKeypoints(query_scores, num_keypoints_cont, nonmaximum_supression_radius_cont);
-query_descriptors = describeKeypoints(I, query_keypoints, descriptor_radius_cont);
 
-database_keypoints = prev_S.C;
-database_descriptors = prev_S.F;
-
-if size(database_keypoints,2) == 0
+if isempty(prev_S.C)
     S.C = query_keypoints;
-    S.F = query_descriptors;
+    S.F = query_keypoints;
     S.T = repmat(T_C_W, 1, size(query_keypoints,2));
 
 else
-    % match descriptors 
-    all_matches = matchDescriptors(query_descriptors, database_descriptors, match_lambda_cont);
-    matched_query_mask = all_matches > 0;
-    matched_query_keypoints = query_keypoints(:,matched_query_mask);
-    matched_database_index = all_matches(all_matches > 0);
-    matched_database_keypoints = database_keypoints(:,matched_database_index);
-    assert(size(matched_database_keypoints,2) == size(matched_query_keypoints,2));
-
-    matched_database_descriptors = database_descriptors(:,matched_database_index);
-    matched_database_transforms = prev_S.T(:,matched_database_index);
+    % track triangulation canditate keypoints
+    KLT_triang = vision.PointTracker('MaxBidirectionalError', 1); % TODO: check out possible options 
+    initialize(KLT_triang, fliplr(prev_S.C'), prev_I); 
+    [C_new,p_validity] = step(KLT_triang,I);
+    S.T=prev_S.T(:, p_validity); % only keep the points that were tracked
+    S.C=flipud(C_new(p_validity,:)');
+    S.F = prev_S.F(:,p_validity);
     
-    S.C = matched_database_keypoints;
-    S.F = matched_database_descriptors;
-    S.T = matched_database_transforms;
-      
     if plot_tracking 
     figure(3);
     title('matches new keypoints')
     imshow(I); hold on;
-    plot(matched_query_keypoints(2, :), matched_query_keypoints(1, :), 'rx', 'Linewidth', 2);
+    plot(S.C(2, :), S.C(1, :), 'rx', 'Linewidth', 2);
 
-    plotMatches([1:size(matched_database_keypoints,2)], matched_database_keypoints, matched_query_keypoints, 2, 'g-');
+    plotMatches([1:size(prev_S.C(:,p_validity),2)], prev_S.C(:,p_validity), S.C, 2, 'g-');
     pause(0.001);
     hold off
     end
     
     % only triangulate points that come from the same image. otherwhise
     % this does not make sense
-    unique_transforms = unique(matched_database_transforms', 'rows')';
+    unique_transforms = unique(S.T', 'rows')';
     
     for i=1:size(unique_transforms,2)
         transform_mask = all(S.T == unique_transforms(:,i),1);
@@ -88,8 +76,8 @@ else
         end
         
         [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, ...
-        max_num_inliers_history] = estimateProjectionRANSAC(matched_database_keypoints(:,transform_mask), ...
-        matched_query_keypoints(:,transform_mask), K, n_iterations_triangulation, pixel_tolerance);
+        max_num_inliers_history] = estimateProjectionRANSAC(prev_S.F(:,transform_mask), ...
+        S.C(:,transform_mask), K, n_iterations_triangulation, pixel_tolerance);
         
         % rescale translation
         T_C_W_i = reshape(unique_transforms(:,i), 3,4);
@@ -125,7 +113,7 @@ else
          new_points = P_C1(:, triangulate_mask);
          new_points_W = T_W_C_i*[new_points; ones(1,size(new_points,2))];
          S.X = [S.X new_points_W(1:3,:)];
-         matched_query_keypoints_i = matched_query_keypoints(:,transform_mask);
+         matched_query_keypoints_i = S.C(:,transform_mask);
          S.P = [S.P matched_query_keypoints_i(:,triangulate_mask)];
          
          if plot_tracking
@@ -144,16 +132,21 @@ else
     end
     
     % and new key points to F,C,T
-    if ~isempty(T_C_W) && ~isempty(matched_database_descriptors)
-        unmatched_query_keypoints = query_keypoints(:,not(matched_query_mask));
-        unmatched_query_descriptors = query_descriptors(:,not(matched_query_mask));
-        unmatched_query_transforms = repmat(T_C_W(:), 1, size(unmatched_query_keypoints,2));
+    if ~isempty(T_C_W)
         
-        S.C=[S.C unmatched_query_keypoints];
-        S.F=[S.F unmatched_query_descriptors];
-        S.T=[S.T unmatched_query_transforms];
-        assert(size(S.C,2) == size(S.F,2));
-        assert(size(S.F,2) == size(S.T,2));
+        % don't add if something close is already in C
+        [~, mask_C] = nonMaxSuppression(query_keypoints, S.C, nonmaximum_supression_radius_cont, size(I)); 
+        
+        % don't add if something close is already in P
+        [~, mask_P] = nonMaxSuppression(query_keypoints, S.P, nonmaximum_supression_radius_cont, size(I)); 
+        
+        new_keypoints = query_keypoints(:,bitand(mask_C,mask_P));
+        S.C=[S.C new_keypoints];
+        S.F = [S.F new_keypoints];
+        S.T=[S.T repmat(T_C_W(:), [1, size(new_keypoints,2)])];
+        assert(size(S.C,2) == size(S.T,2));
+        
+        sprintf('added new keypoints: %i', size(new_keypoints,2))
     end
     
 end
