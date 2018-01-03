@@ -9,7 +9,7 @@ function [S, R_C_W, t_C_W] = processFrame(I,prev_I,prev_S,K)
 run('param.m');
 
 % Localization
-KLT = vision.PointTracker('MaxBidirectionalError', 1) % TODO: check out possible options 
+KLT = vision.PointTracker('MaxBidirectionalError', 1); % TODO: check out possible options 
 initialize(KLT, fliplr(prev_S.P'), prev_I); 
 [P_new,point_validity] = step(KLT,I);
 S.X=prev_S.X(:, point_validity); % only keep the points that were tracked
@@ -18,7 +18,6 @@ S.P=flipud(P_new(point_validity,:)');
 % plot all matches
 if plot_tracking 
     figure(2);
-    clf;
     title('matches tracked keypoints')
     imshow(I); hold on;
     plot(S.P(2, :), S.P(1, :), 'rx', 'Linewidth', 2);
@@ -85,22 +84,12 @@ else
             S.C(:, transform_mask) = [];
             S.F(:, transform_mask) = [];
             S.T(:, transform_mask) = [];
-            sprintf('few points, ignore this set') 
-            sum(transform_mask)
             continue
         end
         
-        % only triangulate points that are not too close to features that
-        % already exist
-        
-        
-        sprintf('trangulate new points and check angles')
-        sum(transform_mask)
         [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, ...
         max_num_inliers_history] = estimateProjectionRANSAC(matched_database_keypoints(:,transform_mask), ...
-        matched_query_keypoints(:,transform_mask), K, n_iterations, pixel_tolerance);
-        t_C2_C1
-        R_C2_C1
+        matched_query_keypoints(:,transform_mask), K, n_iterations_triangulation, pixel_tolerance);
         
         % rescale translation
         T_C_W_i = reshape(unique_transforms(:,i), 3,4);
@@ -131,8 +120,6 @@ else
          angles_deg = acosd(dot(P_C1_in_C2, P_C2) ./ (vecnorm(P_C1_in_C2,2) .* vecnorm(P_C2,2)));
 
          triangulate_mask = bitand(abs(angles_deg) > alpha_deg, not(behind_camera_mask));
-         sprintf('triangulated successfully so many points:')
-         sum(triangulate_mask)
          
          % add new triangulated points
          new_points = P_C1(:, triangulate_mask);
