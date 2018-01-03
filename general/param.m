@@ -64,8 +64,10 @@ min_points = 25; % minimum numbers of points required for triangulation
 % parameters 
 harris_patch_size_cont = 9;
 harris_kappa_cont = 0.08;
-num_keypoints_cont = 300;
+num_keypoints_cont = 100; %300;
 nonmaximum_supression_radius_cont = 10;
 descriptor_radius_cont = 9;
 
-        
+% debug mode
+debug_mode = 1;
+

@@ -1,6 +1,9 @@
 function plotOverview(query_image, query_keypoints, ...
     matched_query_keypoints, matched_database_keypoints, best_inlier_mask, ...
     corresponding_landmarks, M_W_C2, n_tracked_landmarks, ground_guess)
+% plotOverview(query_image, query_keypoints, ...
+%    matched_query_keypoints, matched_database_keypoints, best_inlier_mask, ...
+%    corresponding_landmarks, M_W_C2, n_tracked_landmarks, ground_guess)
 % plots current image, trajectory of last 20 frames and landmarks, #
 % tracked landmarks over last 20 frames and full trajectory
 
@@ -18,7 +21,7 @@ figure(1); clf
         title('Current Image'); 
         
     subplot(2,4,[3,4,7,8]);
-        only_plot_landmarks_near_centre = true;
+        only_plot_landmarks_near_centre = false;
         frame_size = 2;
         if only_plot_landmarks_near_centre
             max_visual_distance = 25;

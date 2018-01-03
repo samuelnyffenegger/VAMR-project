@@ -127,11 +127,11 @@ M_W_C2
 
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
-prev_S = struct('P',[],'X',[],'C',[],'F',[],'T',[])
+prev_S = struct('P',[],'X',[],'C',[],'F',[],'T',[]);
 prev_S.P = inlier_query_keypoints;
 prev_S.X = corresponding_landmarks;
 
-figure(1);
+figure(4);
 % plot initial landmarks
 scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'b');
 set(gcf, 'GraphicsSmoothing', 'on');
@@ -139,6 +139,19 @@ view(0,0);
 axis equal;
 axis vis3d;
 axis([-20 30 -10 5 -10 60]);
+xlabel('x'); ylabel('y'); zlabel('z');
+
+if debug_mode > 0
+    clc
+    warning('debug mode = %i',debug_mode)
+    n_frames_debug = 1000;
+    range = (bootstrap_frames(2)+1):(bootstrap_frames(2)+n_frames_debug); 
+    
+end
+
+
+num_tracked_keypoints = size(prev_S.P,2); 
+figure(6); clf;
 
 for i = range
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
@@ -177,31 +190,40 @@ for i = range
     % do localization and triangulation
     [S, R_C_W, t_C_W] = processFrame(image,prev_image,prev_S, K);
     
+    % collect information
+    num_tracked_keypoints = [num_tracked_keypoints, size(S.P,2)];
+    
     % plot
-    plot = true;
-    if plot
-        figure(1);
+    do_plot = false;
+    if do_plot
+        figure(4);
     
         hold on
         if all(size(R_C_W) > 0) && all(size(t_C_W) > 0)
             plotCoordinateFrame(R_C_W', -R_C_W'*t_C_W, 2);
             view(0,0);
         end
-         new_X = setdiff(S.X', prev_S.X', 'rows')';
+        new_X = setdiff(S.X', prev_S.X', 'rows')';
         if ~isempty(new_X)
             scatter3(new_X(1, :), new_X(2, :), new_X(3, :), 5, 'r');
         end
         if true
-        old_X = intersect(prev_S.X', S.X', 'rows')';
-         scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'b');
-        set(gcf, 'GraphicsSmoothing', 'on');
-        view(0,0);
-        axis equal;
-        axis vis3d;
-        axis([-20 30 -10 5 -10 60]);
+            old_X = intersect(prev_S.X', S.X', 'rows')';
+             scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'b');
+            set(gcf, 'GraphicsSmoothing', 'on');
+            view(0,0);
+            axis equal;
+            axis vis3d;
+            axis([-20 30 -10 5 -10 60]);
         end
-         hold off
+        hold off
+     
+
     end
+    figure(6); hold on; 
+        plot([i-1,i],[num_tracked_keypoints(end-1),num_tracked_keypoints(end)],'b.-')
+        xlabel('iteration');
+        ylabel('# tracked keypoints')
     
     if isempty(t_C_W)
         sprintf('translation is empty. failed to localize.')
@@ -211,5 +233,5 @@ for i = range
     pause(0.01);
 
     prev_img = image;
-    prev_S = S
+    prev_S = S;
 end
