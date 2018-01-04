@@ -27,7 +27,16 @@ if plot_tracking
 end
 
 % localize with P3P and ransac
-[R_C_W, t_C_W, max_num_inliers_history] = ransacP3P(S.X,flipud(S.P),K); % looks like ransacP3P nees switched x and y too
+[R_C_W, t_C_W, max_num_inliers_history, best_inlier_mask] = ransacP3P(S.X,flipud(S.P),K); % looks like ransacP3P nees switched x and y too
+
+% only keep ransac inliers
+if discard_p3p_outliers
+    S.X = S.X(:,best_inlier_mask);
+    S.P = S.P(:,best_inlier_mask);
+end
+
+num_tracked_keypoints = size(S.P,2);
+fprintf('tracked keypoints: %i\n', num_tracked_keypoints);
 T_C_W = [R_C_W, t_C_W];
 T_C_W = T_C_W(:);
 
@@ -154,7 +163,7 @@ else
         S.T= [S.T repmat(T_C_W, [1, size(new_keypoints,2)])];
         assert(size(S.C,2) == size(S.T,2));
         
-        sprintf('added new keypoints: %i', size(new_keypoints,2))
+        fprintf('added new keypoints: %i', size(new_keypoints,2))
     end
     
 end

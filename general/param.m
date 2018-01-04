@@ -57,8 +57,9 @@ plot_tracking = true;
 
 % Triangulate new points
 min_angle_deg = 2; % angle between camera views to allow triangulation
-max_angle_deg = 2*min_angle_deg
+max_angle_deg = 2*min_angle_deg; 
 max_num_tracked_frames = 7; % only this many last frames are tracked. (old ones are not very interesting and slow down computation)
+discard_p3p_outliers = true;
 
 min_points = 5; % minimum numbers of points required for triangulation
 

@@ -1,21 +1,23 @@
-function [R_C_W, t_C_W, max_num_inliers_history] = ransacP3P(X,P,K)
+function [R_C_W, t_C_W, max_num_inliers_history, best_inlier_mask] = ransacP3P(X,P,K)
 
 estimate_DLT = false;
-tweaked_for_more = true;
+tweaked_for_more = false; % TODO: change this to true
 
 % parameters
 if tweaked_for_more
-    num_iterations = 3000;
+    num_iterations = 2000;
 else
     num_iterations = 200;
 end
-pixel_tolerance = 8;
+pixel_tolerance = 1;
 k = 3;
+
 % RANSAC
 best_R = [];
 best_t=[];
 max_num_inliers = 0;
 max_num_inliers_history = zeros(1, num_iterations);
+best_inlier_mask = logical(zeros(1,size(X,2)));
 for i = 1:num_iterations
     % Model from k samples (3P)
     [X_sample, idx] = datasample(...
@@ -39,7 +41,7 @@ for i = 1:num_iterations
     end
 
     if tweaked_for_more
-        min_inlier_count = 30;
+        min_inlier_count = 20;
     else
         min_inlier_count = 6;
     end

@@ -127,7 +127,7 @@ M_W_C2
 
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
-prev_S = struct('P',[],'X',[],'C',[],'F',[],'T',[])
+prev_S = struct('P',[],'X',[],'C',[],'F',[],'T',[]); 
 prev_S.P = inlier_query_keypoints;
 prev_S.X = corresponding_landmarks;
 
@@ -138,7 +138,7 @@ set(gcf, 'GraphicsSmoothing', 'on');
 view(0,0);
 axis equal;
 axis vis3d;
-axis([-20 30 -10 5 -10 60]);
+axis([-20 100 -10 5 -10 60]);
 
 for i = range
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
@@ -198,7 +198,7 @@ for i = range
         view(0,0);
         axis equal;
         axis vis3d;
-        axis([-20 30 -15 15 -10 60]);
+        axis([-20 100 -10 5 -10 60]);
         end
          hold off
     end
@@ -211,5 +211,5 @@ for i = range
     pause(0.01);
 
     prev_img = image;
-    prev_S = S
+    prev_S = S;
 end
