@@ -68,83 +68,59 @@ else
     % only triangulate points that come from the same image. otherwhise
     % this does not make sense
     unique_transforms = unique(S.T', 'rows')';
-    size(unique_transforms)
+    
+    if size(unique_transforms) > max_num_tracked_frames
+        kill_old_transforms_mask = logical([zeros(1,max_num_tracked_frames), ones(size(unique_transforms,2)-max_num_tracked_frames)]);
+    else
+        kill_old_transforms_mask = logical(zeros(1, size(unique_transforms,2)));
+    end
     for i=1:size(unique_transforms,2)
         transform_mask = all(S.T == unique_transforms(:,i),1);
         
-        if sum(transform_mask) < min_points
+        if sum(transform_mask) < min_points || kill_old_transforms_mask(i)
             S.C(:, transform_mask) = [];
             S.F(:, transform_mask) = [];
             S.T(:, transform_mask) = [];
             continue
         end
         
-        [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, ...
-        max_num_inliers_history] = estimateProjectionRANSAC(S.F(:,transform_mask), ...
-        S.C(:,transform_mask), K, n_iterations_triang, pixel_tolerance);
-
-        % rescale translation
-        T_C_W_i = reshape(unique_transforms(:,i), 3,4);
-        t_C_W_i = T_C_W_i(1:3,4);
-        
-        T_W_C_i = [T_C_W_i(1:3,1:3)' -T_C_W_i(1:3,1:3)'*T_C_W_i(1:3,4)];
-        
-        t_C2_C1_localization = t_C_W - t_C_W_i;
-        norm_t_localization = norm(t_C2_C1_localization);
-        norm_t_triangulation = norm(t_C2_C1);
-        
-        scale_correction = norm_t_localization / norm_t_triangulation;
-        
-        t_C2_C1 = scale_correction * t_C2_C1;
-        P_C2 = P_C2 * scale_correction;
-        
-        if isempty(t_C2_C1) || isempty(R_C2_C1)
-            continue
-        end
-        figure(18);
-        subplot(3,1,1); 
-        hold on
-        title('tC2C1')
-        quiver3(0,0,0, t_C2_C1(1), t_C2_C1(2), t_C2_C1(3))
-        axis([-5 5 -1 1 -1 1]);
-        view(0,0);
-        hold off
-        figure(18);
-        subplot(3,1,2);
-        hold on
-        title('tC2C1 localization')
-        quiver3(0,0,0, t_C2_C1_localization(1), t_C2_C1_localization(2), t_C2_C1_localization(3))
-        axis([-5 5 -1 1 -1 1]);
-        view(0,0); 
-        hold off
-        subplot(3,1,3);
-        hold on
-        title('tCW_i ')
-        quiver3(0,0,0, t_C_W_i(1), t_C_W_i(2), t_C_W_i(3))
-        axis([-5 5 -1 1 -1 1]);
-        view(0,0); 
-        hold off
-        
-        % drop points behind camera
-        behind_camera_mask = P_C2(3, :) < 0;
-        
-         % triangulated points in original coordinate frame 
-         P_C1 = R_C2_C1' * P_C2 - R_C2_C1' * t_C2_C1;
-         P_C1_in_C2 = P_C2 - t_C2_C1; % points from C1 to P in frame C2.
-
-         angles_deg = acosd(dot(P_C1_in_C2, P_C2) ./ (vecnorm(P_C1_in_C2,2) .* vecnorm(P_C2,2)));
-         angles_mask = abs(angles_deg) > alpha_deg;
+        T_C_W_i = reshape(unique_transforms(:,i),3,4);
+        T_W_C_i = [T_C_W_i(1:3,1:3)', -T_C_W_i(1:3,1:3)'*T_C_W_i(1:3,4)];
+        T_W_C = [R_C_W' -R_C_W'*t_C_W];
+        %T_C1_C2 = T_C_W_i * T_W_C
+         T_C1_C2 = [T_C_W_i(1:3,1:3) * T_W_C(1:3,1:3) T_C_W_i(1:3,1:3)*T_W_C(1:3,4)+T_C_W_i(1:3,4)];
+         t_C1_C2 = T_C1_C2(1:3,4);
          
-         if sum(angles_mask)/size(angles_mask,2) > 0.5
-            triangulate_mask = bitand(angles_mask, not(behind_camera_mask));
-         else
-             triangulate_mask = logical(zeros(1,size(angles_mask,2)));
-         end
+        %T_C2_C1 = T_C_W * T_W_C_i
+        T_C2_C1 = [R_C_W * T_W_C_i(1:3,1:3), R_C_W*T_W_C_i(1:3,4) + t_C_W];
+        
+        database_keypoints = prev_S.F(:,p_validity);
+        database_keypoints_homog = [flipud(database_keypoints(:,transform_mask)); ones(1,size(database_keypoints(:,transform_mask),2))];
+        query_keypoints_homog = [flipud(S.C(:,transform_mask)); ones(1,size(S.C(:,transform_mask),2))];
+        
+        M_database = K * T_C_W_i;
+        M_query = K * [R_C_W t_C_W];
+        
+        P_W = linearTriangulation(database_keypoints_homog, ...
+           query_keypoints_homog, M_database, M_query);
+        
+       % drop points behind camera
+        P_C1 = T_C_W_i * P_W;
+        P_C2 = reshape(T_C_W, 3,4) * P_W;
+        P_W = P_W(1:3,:);
+        
+        behind_camera_mask = bitor(P_C1(3, :) < 0, P_C2(3,:) < 0)   ;
+         
+         P_C2_in_C1 = P_C1 - T_C1_C2(1:3,4);
+         angles_deg = acosd(dot(P_C2_in_C1, P_C1) ./ (vecnorm(P_C2_in_C1,2) .* vecnorm(P_C1,2)));
+         angles_mask = bitand(abs(angles_deg) > min_angle_deg, abs(angles_deg) < max_angle_deg);
+         
+         triangulate_mask = bitand(angles_mask, not(behind_camera_mask));
          
          % add new triangulated points
-         new_points = P_C1(:, triangulate_mask);
-         new_points_W = T_W_C_i*[new_points; ones(1,size(new_points,2))];
-         S.X = [S.X new_points_W(1:3,:)];
+         new_points = P_W(:, triangulate_mask);
+         %new_points_W = T_W_C_i*[new_points; ones(1,size(new_points,2))];
+         S.X = [S.X new_points];
          matched_query_keypoints_i = S.C(:,transform_mask);
          S.P = [S.P matched_query_keypoints_i(:,triangulate_mask)];
          
@@ -175,7 +151,7 @@ else
         new_keypoints = query_keypoints(:,bitand(mask_C,mask_P));
         S.C= [S.C new_keypoints];
         S.F =[S.F new_keypoints];
-        S.T= [S.T repmat(T_C_W(:), [1, size(new_keypoints,2)])];
+        S.T= [S.T repmat(T_C_W, [1, size(new_keypoints,2)])];
         assert(size(S.C,2) == size(S.T,2));
         
         sprintf('added new keypoints: %i', size(new_keypoints,2))

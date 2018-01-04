@@ -198,7 +198,7 @@ for i = range
         view(0,0);
         axis equal;
         axis vis3d;
-        axis([-20 30 -10 5 -10 60]);
+        axis([-20 30 -15 15 -10 60]);
         end
          hold off
     end

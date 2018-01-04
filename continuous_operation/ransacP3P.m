@@ -5,11 +5,11 @@ tweaked_for_more = true;
 
 % parameters
 if tweaked_for_more
-    num_iterations = 2000;
+    num_iterations = 3000;
 else
     num_iterations = 200;
 end
-pixel_tolerance = 10;
+pixel_tolerance = 8;
 k = 3;
 % RANSAC
 best_R = [];
@@ -39,7 +39,7 @@ for i = 1:num_iterations
     end
 
     if tweaked_for_more
-        min_inlier_count = 20;
+        min_inlier_count = 30;
     else
         min_inlier_count = 6;
     end
