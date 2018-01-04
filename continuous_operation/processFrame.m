@@ -68,7 +68,7 @@ else
     % only triangulate points that come from the same image. otherwhise
     % this does not make sense
     unique_transforms = unique(S.T', 'rows')';
-    
+    size(unique_transforms)
     for i=1:size(unique_transforms,2)
         transform_mask = all(S.T == unique_transforms(:,i),1);
         
@@ -82,29 +82,48 @@ else
         [R_C2_C1, t_C2_C1, P_C2, best_inlier_mask, ...
         max_num_inliers_history] = estimateProjectionRANSAC(S.F(:,transform_mask), ...
         S.C(:,transform_mask), K, n_iterations_triang, pixel_tolerance);
-        
+
         % rescale translation
         T_C_W_i = reshape(unique_transforms(:,i), 3,4);
+        t_C_W_i = T_C_W_i(1:3,4);
+        
         T_W_C_i = [T_C_W_i(1:3,1:3)' -T_C_W_i(1:3,1:3)'*T_C_W_i(1:3,4)];
         
-        t_W_C_i = T_W_C_i(1:3,4); % position at first frame
-        t_W_C = - R_C_W' * t_C_W; % position now
-        t_C2_C1_localization = t_W_C - t_W_C_i;
+        t_C2_C1_localization = t_C_W - t_C_W_i;
         norm_t_localization = norm(t_C2_C1_localization);
         norm_t_triangulation = norm(t_C2_C1);
         
         scale_correction = norm_t_localization / norm_t_triangulation;
         
-        unit_t_triang = t_C2_C1/norm_t_triangulation
-        unit_t_localization = t_C2_C1_localization / norm_t_localization
-        
         t_C2_C1 = scale_correction * t_C2_C1;
         P_C2 = P_C2 * scale_correction;
-        
         
         if isempty(t_C2_C1) || isempty(R_C2_C1)
             continue
         end
+        figure(18);
+        subplot(3,1,1); 
+        hold on
+        title('tC2C1')
+        quiver3(0,0,0, t_C2_C1(1), t_C2_C1(2), t_C2_C1(3))
+        axis([-5 5 -1 1 -1 1]);
+        view(0,0);
+        hold off
+        figure(18);
+        subplot(3,1,2);
+        hold on
+        title('tC2C1 localization')
+        quiver3(0,0,0, t_C2_C1_localization(1), t_C2_C1_localization(2), t_C2_C1_localization(3))
+        axis([-5 5 -1 1 -1 1]);
+        view(0,0); 
+        hold off
+        subplot(3,1,3);
+        hold on
+        title('tCW_i ')
+        quiver3(0,0,0, t_C_W_i(1), t_C_W_i(2), t_C_W_i(3))
+        axis([-5 5 -1 1 -1 1]);
+        view(0,0); 
+        hold off
         
         % drop points behind camera
         behind_camera_mask = P_C2(3, :) < 0;
