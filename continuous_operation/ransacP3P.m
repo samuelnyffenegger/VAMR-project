@@ -17,6 +17,7 @@ best_R = [];
 best_t=[];
 max_num_inliers = 0;
 max_num_inliers_history = zeros(1, num_iterations);
+best_inlier_mask = logical(zeros(1,size(X,2)));
 for i = 1:num_iterations
     % Model from k samples (3P)
     [X_sample, idx] = datasample(...

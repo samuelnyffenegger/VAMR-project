@@ -32,9 +32,8 @@ database_scores = harris(database_image, harris_patch_size, harris_kappa);
 database_keypoints = selectKeypoints(database_scores, num_keypoints, nonmaximum_supression_radius); % [y1,y2,...;x1,x2,...]
 
 % track keypoints using Lucas Kanade tracking (KLT)
-patch_size = 2*harris_patch_size+1;
 tracker = vision.PointTracker('MaxBidirectionalError',max_bidirectional_error, ...
-    'BlockSize',patch_size*ones(1,2),'MaxIterations',KLT_max_iterations); 
+    'BlockSize',KLT_patch_size*ones(1,2),'MaxIterations',KLT_max_iterations); 
 initialize(tracker,fliplr(database_keypoints'),database_image);
 [query_keypoints, point_validity] = step(tracker,query_image);
 query_keypoints = fliplr(query_keypoints)';

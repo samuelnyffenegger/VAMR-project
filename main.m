@@ -145,7 +145,8 @@ if debug_mode > 0
     clc
     warning('debug mode = %i',debug_mode)
     n_frames_debug = 1000;
-    range = (bootstrap_frames(2)+1):(bootstrap_frames(2)+n_frames_debug); 
+    frame_step_size = 1;
+    range = (bootstrap_frames(2)+1):frame_step_size:(bootstrap_frames(2)+n_frames_debug); 
 end
 
 

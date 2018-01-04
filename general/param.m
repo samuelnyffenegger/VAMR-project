@@ -17,7 +17,34 @@ pixel_tolerance_RANSAC = 3;
 % KLT with RANSAC
 max_bidirectional_error = 1;
 KLT_max_iterations = 30;
+KLT_patch_size = 2*harris_patch_size+1; % has to be odd (2*patch_radius+1), default: 31
 % patch size for KLT is same as harris patch size
+
+%% continuous operation
+plot_tracking = true;
+
+% Triangulate new points
+alpha_deg = 2; % angle between camera views to allow triangulation
+n_iterations_triangulation = 50;
+pixel_tolerance =2;
+min_points = 25; % minimum numbers of points required for triangulation
+
+% parameters 
+harris_patch_size_cont = 9;
+harris_kappa_cont = 0.08;
+num_keypoints_cont = 300;
+nonmaximum_supression_radius_cont = 10;
+descriptor_radius_cont = 9;
+
+% KLT with RANSAC
+max_bidirectional_error_cont = 1;
+KLT_max_iterations_cont = 30;
+KLT_patch_size_cont = 41; % has to be odd (2*patch_radius+1), default: 31
+
+
+% debug mode
+debug_mode = 1;
+
 
 %% dataset specific tuning parameters
 ds = 2;         % dataset - 0: KITTI, 1: Malaga, 2: parking
@@ -32,8 +59,8 @@ switch ds
 
     case 2 % parking parameters
         bootstrap_frames = [40,45]; 
-        bootstrap_frames = [1,5]; 
-        bootstrap_frames = [90,91]; 
+        % bootstrap_frames = [1,5]; 
+        % bootstrap_frames = [90,91]; 
         
     
     case 3 % alpha & omega
@@ -55,22 +82,4 @@ switch ds
         warning('choose dataset!')
 end
 
-%% continuous operation
-plot_tracking = true;
-
-% Triangulate new points
-alpha_deg = 5; % angle between camera views to allow triangulation
-n_iterations_triangulation = 50;
-pixel_tolerance =2;
-min_points = 25; % minimum numbers of points required for triangulation
-
-% parameters 
-harris_patch_size_cont = 9;
-harris_kappa_cont = 0.08;
-num_keypoints_cont = 100; %300;
-nonmaximum_supression_radius_cont = 10;
-descriptor_radius_cont = 9;
-
-% debug mode
-debug_mode = 1;
 
