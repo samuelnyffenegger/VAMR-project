@@ -27,15 +27,19 @@ if plot_tracking
 end
 
 % localize with P3P and ransac
-[R_C_W, t_C_W, max_num_inliers_history] = ransacP3P(S.X,flipud(S.P),K); % looks like ransacP3P nees switched x and y too
-T_C_W = [R_C_W, t_C_W]
+[R_C_W, t_C_W, max_num_inliers_history, best_inlier_mask] = ransacP3P(S.X,flipud(S.P),K); % looks like ransacP3P nees switched x and y too
+T_C_W = [R_C_W, t_C_W];
+
+% only keep ransac inliers
+S.X = S.X(:,best_inlier_mask);
+S.P = S.P(:,best_inlier_mask);
 num_tracked_keypoints = size(S.P,2);
 
 if debug_mode > 0
     assert(size(S.P,2)==size(S.X,2),'number mismatch: keypoints landmarks ')
 end
 
-talkative_continuous = false;
+talkative_continuous = true;
 if talkative_continuous
     fprintf('keypoints: \n\ttracked = %i\n\n', num_tracked_keypoints)
     eulXYZ = rad2deg(rotm2eul(T_C_W(1:3,1:3),'XYZ'));

@@ -146,7 +146,6 @@ if debug_mode > 0
     warning('debug mode = %i',debug_mode)
     n_frames_debug = 1000;
     range = (bootstrap_frames(2)+1):(bootstrap_frames(2)+n_frames_debug); 
-    
 end
 
 
@@ -194,7 +193,7 @@ for i = range
     num_tracked_keypoints = [num_tracked_keypoints, size(S.P,2)];
     
     % plot
-    do_plot = false;
+    do_plot = true;
     if do_plot
         figure(4);
     
@@ -217,9 +216,9 @@ for i = range
             axis([-20 30 -10 5 -10 60]);
         end
         hold off
-     
 
     end
+    
     figure(6); hold on; 
         plot([i-1,i],[num_tracked_keypoints(end-1),num_tracked_keypoints(end)],'b.-')
         xlabel('iteration');

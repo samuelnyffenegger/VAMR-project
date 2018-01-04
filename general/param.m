@@ -32,6 +32,9 @@ switch ds
 
     case 2 % parking parameters
         bootstrap_frames = [40,45]; 
+        bootstrap_frames = [1,5]; 
+        bootstrap_frames = [90,91]; 
+        
     
     case 3 % alpha & omega
         bootstrap_frames = [5,6];

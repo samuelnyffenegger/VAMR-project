@@ -1,7 +1,7 @@
-function [R_C_W, t_C_W, max_num_inliers_history] = ransacP3P(X,P,K)
+function [R_C_W, t_C_W, max_num_inliers_history, best_inlier_mask] = ransacP3P(X,P,K)
 
 estimate_DLT = false;
-tweaked_for_more = true;
+tweaked_for_more = false; % TODO: change this to true
 
 % parameters
 if tweaked_for_more
@@ -9,8 +9,9 @@ if tweaked_for_more
 else
     num_iterations = 200;
 end
-pixel_tolerance = 10;
+pixel_tolerance = 1;
 k = 3;
+
 % RANSAC
 best_R = [];
 best_t=[];
