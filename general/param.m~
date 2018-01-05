@@ -32,7 +32,6 @@ KLT_max_iterations = 60;
 % patch size for KLT is same as harris patch size
 
 % continuous operation
-frame_step_size = 1; 
 
 % Triangulate new points (continous operation)
 min_angle_deg = 3; % angle between camera views to allow triangulation
@@ -62,7 +61,7 @@ KLT_max_iterations_cont = 30; % default: 30
 axis_array = [-40 200 -10 5 -100 100];
 
 %% dataset specific tuning parameters
-ds = 5;         % dataset - 0: KITTI, 1: Malaga, 2: parking, 
+ds = 0;         % dataset - 0: KITTI, 1: Malaga, 2: parking, 
 
 switch ds
     case 0 % Kitti parameters
@@ -89,7 +88,6 @@ switch ds
         % patch size for KLT is same as harris patch size
 
         % continuous operation
-        frame_step_size = 1; 
 
         % Triangulate new points (continous operation)
         min_angle_deg = 0.5; % angle between camera views to allow triangulation
@@ -140,7 +138,6 @@ switch ds
         % patch size for KLT is same as harris patch size
 
         % continuous operation
-        frame_step_size = 1; 
 
         % Triangulate new points (continous operation)
         min_angle_deg = 3; % angle between camera views to allow triangulation
@@ -175,11 +172,14 @@ switch ds
         
     case 5 % duckietown, set 1
         
-%% tuning parameters duckietown
-% bootstrap_frames = [266,286]; axis_array =  [-40 40 -10 10 -25 125];
-% bootstrap_frames = [354,355]; % motion blurr
-% bootstrap_frames = [587,590]; axis_array = [-40 40 -10 10 -25 125];
-bootstrap_frames = [1111,1113]; axis_array = [-40 40 -10 10 -25 125];
+%% tuning parameters KITTI
+bootstrap_frames = [266,267]; [-40 40 -10 10 -25 175];
+bootstrap_frames = [354,355]; % motion blurr
+bootstrap_frames = [587,590]; % turn right
+bootstrap_frames = [1111,1113]; % turn right
+bootstrap_frames = [0,2]; axis_array = 
+bootstrap_frames = [80,82]; axis_array = [-40 200 -10 5 -50 150];
+% bootstrap_frames = [180,182]; axis_array = [-200 40 -10 5 -75 125];
 
 % keypoint selection and description
 harris_patch_size = 9;
@@ -199,16 +199,15 @@ KLT_max_iterations = 60;
 % patch size for KLT is same as harris patch size
 
 % continuous operation
-frame_step_size = 5; 
 
 % Triangulate new points (continous operation)
-min_angle_deg = 3; % angle between camera views to allow triangulation
+min_angle_deg = 0.5; % angle between camera views to allow triangulation
 max_angle_deg = 2.5*min_angle_deg; 
 max_num_tracked_frames = 5; % only this many last frames are tracked. (old ones are not very interesting and slow down computation)
 
 % P3P with RANSAC
 discard_p3p_outliers = true; 
-Ransac_p3p_pixel_tolerance = 10; %5;
+Ransac_p3p_pixel_tolerance = 20; %5;
 estimate_DLT = false;
 tweaked_for_more = false; % TODO: change this to true
 min_points = 5; % minimum numbers of points required for triangulation

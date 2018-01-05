@@ -128,9 +128,9 @@ run('param.m');
 
 if early_stopping > 0
     warning('early stopping is activated.')
-    range = (bootstrap_frames(2)+1):(bootstrap_frames(2)+early_stopping);
+    range = (bootstrap_frames(2)+1):frame_step_size:(bootstrap_frames(2)+early_stopping);
 else
-    range = (bootstrap_frames(2)+1):last_frame;
+    range = (bootstrap_frames(2)+1):frame_step_size:last_frame;
 end
 
 prev_S = struct('P',[],'X',[],'C',[],'F',[],'T',[]); 
@@ -164,31 +164,31 @@ for i = range
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
     if ds == 0
         image = imread([kitti_path '/00/image_0/' sprintf('%06d.png',i)]);
-        prev_image = imread([kitti_path '/00/image_0/' sprintf('%06d.png',i-1)]);
+        prev_image = imread([kitti_path '/00/image_0/' sprintf('%06d.png',i-frame_step_size)]);
     elseif ds == 1
         image = rgb2gray(imread([malaga_path ...
             '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
             left_images(i).name]));
         prev_image = rgb2gray(imread([malaga_path ...
             '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
-            left_images(i-1).name]));
+            left_images(i-frame_step_size).name]));
     elseif ds == 2
         image = im2uint8(rgb2gray(imread([parking_path ...
             sprintf('/images/img_%05d.png',i)])));
         prev_image = im2uint8(rgb2gray(imread([parking_path ...
-            sprintf('/images/img_%05d.png',i-1)])));
+            sprintf('/images/img_%05d.png',i-frame_step_size)])));
         
     elseif ds == 5
         image = rgb2gray(imread([duckietown_path_set1 ...
             sprintf('%05d.JPG',i)]));
         prev_image = rgb2gray(imread([duckietown_path_set1 ...
-            sprintf('%05d.JPG',i-1)]));
+            sprintf('%05d.JPG',i-frame_step_size)]));
 
     elseif ds == 6
         image = rgb2gray(imread([duckietown_path_set2 ...
             sprintf('%05d.JPG',i)]));
         prev_image = rgb2gray(imread([duckietown_path_set2 ...
-            sprintf('%05d.JPG',i-1)]));
+            sprintf('%05d.JPG',i-frame_step_size)]));
 
     else
         assert(false);
