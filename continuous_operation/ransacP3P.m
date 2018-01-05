@@ -1,7 +1,6 @@
 function [R_C_W, t_C_W, max_num_inliers_history, best_inlier_mask] = ransacP3P(X,P,K)
 
-estimate_DLT = false;
-tweaked_for_more = false; % TODO: change this to true
+run('param.m');
 
 % parameters
 if tweaked_for_more
@@ -9,7 +8,6 @@ if tweaked_for_more
 else
     num_iterations = 200;
 end
-pixel_tolerance = 1;
 k = 3;
 
 % RANSAC
@@ -60,7 +58,7 @@ for i = 1:num_iterations
         
             difference = P - projected_points;
             errors = sum(difference.^2, 1);
-            is_inlier = errors < pixel_tolerance^2;
+            is_inlier = errors < Ransac_p3p_pixel_tolerance^2;
 
             if nnz(is_inlier) > max_num_inliers && ...
                  nnz(is_inlier) >= min_inlier_count

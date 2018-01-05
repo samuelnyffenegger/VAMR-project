@@ -121,9 +121,9 @@ end
 %     initialization_patch_matching(img1, img2, K);
         
 % initialization KLT
-[inlier_query_keypoints, corresponding_landmarks, M_W_C2] = ...
+[inlier_query_keypoints, corresponding_landmarks, T_W_C2] = ...
   initialization_KLT(img1, img2, K);
-M_W_C2
+T_W_C2
 
 %% Continuous operation
 range = (bootstrap_frames(2)+1):last_frame;
@@ -131,15 +131,18 @@ prev_S = struct('P',[],'X',[],'C',[],'F',[],'T',[]);
 prev_S.P = inlier_query_keypoints;
 prev_S.X = corresponding_landmarks;
 
-figure(1);
-% plot initial landmarks
-scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'b');
-set(gcf, 'GraphicsSmoothing', 'on');
-view(0,0);
-axis equal;
-axis vis3d;
-axis([-20 100 -10 5 -10 60]);
+if  plot_landmarks && not(plot_on_one_figure)
+    figure(1); clf;
+    % plot initial landmarks
+    scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'b');
+    set(gcf, 'GraphicsSmoothing', 'on');
+    view(0,0);
+    axis equal;
+    axis vis3d;
+    axis(axis_array);
+end
 
+poses = T_W_C2(:)'; 
 for i = range
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
     if ds == 0
@@ -177,9 +180,11 @@ for i = range
     % do localization and triangulation
     [S, R_C_W, t_C_W] = processFrame(image,prev_image,prev_S, K);
     
+    T_W_C = [R_C_W', -R_C_W'*t_C_W];
+    poses = [poses; T_W_C(:)'];
+    
     % plot
-    plot = true;
-    if plot
+    if plot_landmarks
         figure(1);
     
         hold on
@@ -198,7 +203,7 @@ for i = range
         view(0,0);
         axis equal;
         axis vis3d;
-        axis([-20 100 -10 5 -10 60]);
+        axis(axis_array);
         end
          hold off
     end
@@ -213,3 +218,13 @@ for i = range
     prev_img = image;
     prev_S = S;
 end
+fprintf('\ncongratulation!\n')
+
+%% plot estimated ground truth
+
+if plot_poses & not(plot_on_one_figure)
+    figure(5); clf;
+        plot(poses(:,4),poses(:,12),'b-*');
+        title('estimated ground truth')
+end
+    

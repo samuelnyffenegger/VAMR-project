@@ -6,8 +6,9 @@ function plotOverview(query_image, query_keypoints, ...
 
 
 %% calculations 
-
-figure(1); clf
+set(0,'units','pixels')
+fig1 = figure(1); clf;
+    fig1.Position = get(0,'screensize'); 
     subplot(2,4,[1,2]); 
         imshow(query_image); hold on;
         plot(query_keypoints(2, :), query_keypoints(1, :), 'rx', 'Linewidth', 2);
