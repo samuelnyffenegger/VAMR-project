@@ -2,10 +2,12 @@
 talkative_initialization = true;
 talkative_cont = true; % TODO: implement this
 
-do_plotting = false;
+do_plotting = true;
 plot_on_one_figure = true; 
-plot_tracking = false;
-plot_landmarks = false;
+plot_tracking = true;
+plot_landmarks = true;
+
+save_in_bags = false;
 
 
 
@@ -33,7 +35,7 @@ axis_array = [-40 200 -10 5 -100 100];
 % Triangulate new points
 min_angle_deg = 3; % angle between camera views to allow triangulation
 max_angle_deg = 2.5*min_angle_deg; 
-max_num_tracked_frames = 7; % only this many last frames are tracked. (old ones are not very interesting and slow down computation)
+max_num_tracked_frames = 5; % only this many last frames are tracked. (old ones are not very interesting and slow down computation)
 
 % P3P
 discard_p3p_outliers = true; % why better performance if false?
@@ -51,12 +53,12 @@ nonmaximum_supression_radius_cont = 8;
 descriptor_radius_cont = 9;
 
 % tracking
-KLT_max_bidirectional_error_cont = 2; 
+KLT_max_bidirectional_error_cont = 1; 
 KLT_patch_size_cont = 31; %2*harris_patch_size+1; % default: 31
 KLT_max_iterations_cont = 30; % default: 30
         
 %% dataset specific tuning parameters
-ds = 2;         % dataset - 0: KITTI, 1: Malaga, 2: parking
+ds = 0;         % dataset - 0: KITTI, 1: Malaga, 2: parking
 switch ds
     case 0 % Kitti parameters
         bootstrap_frames = [0,2]; 

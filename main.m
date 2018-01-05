@@ -195,9 +195,13 @@ for i = range
     
     % fill the bags for post processing plots
     T_W_C = [R_C_W', -R_C_W'*t_C_W];
-    poses = [poses; T_W_C(:)'];
-    landmarks = [landmarks, S.X];
-    num_keypoints_statistics = [num_keypoints_statistics, [S.num_tracked_keypoints; S.num_added_keypoints]];
+    if save_in_bags
+        poses = [poses; T_W_C(:)'];
+        landmarks = [landmarks, S.X];
+        num_keypoints_statistics = [num_keypoints_statistics, [S.num_tracked_keypoints; S.num_added_keypoints]];
+    else
+        poses = [poses(end,:); T_W_C(:)'];
+    end
     
     % plot
     if plot_landmarks && do_plotting
