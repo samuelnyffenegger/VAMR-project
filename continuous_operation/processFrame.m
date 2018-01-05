@@ -35,6 +35,9 @@ if discard_p3p_outliers
     S.P = S.P(:,best_inlier_mask);
 end
 
+% refine camera pose
+[R_C_W, t_C_W] = nonlinearOptimization(S.X, S.P, R_C_W, t_C_W, K);
+
 num_tracked_keypoints = size(S.P,2);
 fprintf('tracked keypoints: %i\n', num_tracked_keypoints);
 T_C_W = [R_C_W, t_C_W];
