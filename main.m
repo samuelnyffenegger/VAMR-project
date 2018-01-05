@@ -4,8 +4,6 @@
 %   Nov 2017 - Jan 2018
 
 %% ToDo
-%   cont tracking
-%   cont supression
 %   param tuning
 %   new dataset
 
@@ -128,7 +126,13 @@ T_W_C2
 %% Continuous operation
 run('param.m');
 
-range = (bootstrap_frames(2)+1):last_frame;
+if early_stopping > 0
+    warning('early stopping is activated.')
+    range = (bootstrap_frames(2)+1):(bootstrap_frames(2)+early_stopping);
+else
+    range = (bootstrap_frames(2)+1):last_frame;
+end
+
 prev_S = struct('P',[],'X',[],'C',[],'F',[],'T',[]); 
 prev_S.P = inlier_query_keypoints;
 prev_S.X = corresponding_landmarks;
@@ -265,6 +269,7 @@ for i = range
     prev_S = S;
 end
 fprintf('\ncongratulation!\n')
+
 
 %% post processing plots 2d
 % ground truth (2d plot)
