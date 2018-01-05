@@ -9,21 +9,28 @@ function [S, R_C_W, t_C_W] = processFrame(I,prev_I,prev_S,K)
 run('param.m');
 
 % Localization
-KLT = vision.PointTracker('MaxBidirectionalError', 1); % TODO: check out possible options 
+KLT = vision.PointTracker('MaxBidirectionalError',KLT_max_bidirectional_error_cont, ...
+    'BlockSize',KLT_patch_size_cont*ones(1,2),'MaxIterations',KLT_max_iterations_cont); % TODO: check out possible options 
 initialize(KLT, fliplr(prev_S.P'), prev_I); 
 [P_new,point_validity] = step(KLT,I);
 S.X=prev_S.X(:, point_validity); % only keep the points that were tracked
 S.P=flipud(P_new(point_validity,:)');
 
 % plot all matches
-if plot_tracking 
-    figure(2);
-    title('matches tracked keypoints')
+if plot_tracking && do_plotting
+    if plot_on_one_figure
+        fig1 = figure(1); 
+        fig1.Position = full_screen; 
+        subplot(2,4,[1,2]);  
+    else
+        figure(2); 
+    end
     imshow(I); hold on;
     plot(S.P(2, :), S.P(1, :), 'rx', 'Linewidth', 2);
     plotMatches([1:size(S.P,2)], prev_S.P(:,point_validity), S.P, 2, 'g-');
-    pause(0.001);
-    hold off
+    % pause(0.001);
+    title('tracked keypoints')
+    % hold off
 end
 
 % localize with P3P and ransac
@@ -36,6 +43,7 @@ if discard_p3p_outliers
 end
 
 num_tracked_keypoints = size(S.P,2);
+S.num_tracked_keypoints = num_tracked_keypoints;
 fprintf('tracked keypoints: %i\n', num_tracked_keypoints);
 T_C_W = [R_C_W, t_C_W];
 T_C_W = T_C_W(:);
@@ -43,6 +51,7 @@ T_C_W = T_C_W(:);
 if isempty(R_C_W) || isempty(t_C_W)
     assert(false)
 end
+
 
 %% track keypoints
 % find harris keypoints and patch descriptors
@@ -53,25 +62,26 @@ if isempty(prev_S.C)
     S.C = query_keypoints;
     S.F = query_keypoints;
     S.T = repmat(T_C_W, 1, size(query_keypoints,2));
+    S.num_added_keypoints = 0;
 
 else
     % track triangulation canditate keypoints
-    KLT_triang = vision.PointTracker('MaxBidirectionalError', 1); % TODO: check out possible options 
+    KLT_triang = vision.PointTracker('MaxBidirectionalError',KLT_max_bidirectional_error_cont, ...
+    'BlockSize',KLT_patch_size_cont*ones(1,2),'MaxIterations',KLT_max_iterations_cont); % TODO: check out possible options 
     initialize(KLT_triang, fliplr(prev_S.C'), prev_I); 
     [C_new,p_validity] = step(KLT_triang,I);
-    S.C= flipud(C_new(p_validity,:)');
+    S.C = flipud(C_new(p_validity,:)');
     S.F = prev_S.F(:,p_validity);
-    S.T=prev_S.T(:, p_validity); % only keep the points that were tracked
+    S.T = prev_S.T(:, p_validity); % only keep the points that were tracked
     
-    if plot_tracking 
-    figure(3);
-    title('matches new keypoints')
-    imshow(I); hold on;
-    plot(S.C(2, :), S.C(1, :), 'rx', 'Linewidth', 2);
-
-    plotMatches([1:size(prev_S.C(:,p_validity),2)], prev_S.C(:,p_validity), S.C, 2, 'g-');
-    pause(0.001);
-    hold off
+    if plot_tracking && not(plot_on_one_figure) && do_plotting
+        figure(3);
+            imshow(I); hold on;
+            plot(S.C(2, :), S.C(1, :), 'rx', 'Linewidth', 2);
+            plotMatches([1:size(prev_S.C(:,p_validity),2)], prev_S.C(:,p_validity), S.C, 2, 'g-');
+            title('tracked new keypoints')
+            % pause(0.001);
+            hold off
     end
     
     % only triangulate points that come from the same image. otherwhise
@@ -118,7 +128,7 @@ else
         P_C2 = reshape(T_C_W, 3,4) * P_W;
         P_W = P_W(1:3,:);
         
-        behind_camera_mask = bitor(P_C1(3, :) < 0, P_C2(3,:) < 0)   ;
+        behind_camera_mask = bitor(P_C1(3, :) < 0, P_C2(3,:) < 0);
          
          P_C2_in_C1 = P_C1 - T_C1_C2(1:3,4);
          angles_deg = acosd(dot(P_C2_in_C1, P_C1) ./ (vecnorm(P_C2_in_C1,2) .* vecnorm(P_C1,2)));
@@ -133,8 +143,14 @@ else
          matched_query_keypoints_i = S.C(:,transform_mask);
          S.P = [S.P matched_query_keypoints_i(:,triangulate_mask)];
          
-         if plot_tracking
-            figure(2);
+         if plot_tracking && not(plot_on_one_figure) && do_plotting
+            if plot_on_one_figure
+                fig1 = figure(1); 
+                fig1.Position = full_screen; 
+                subplot(2,4,[3,4,7,8]);
+            else
+                figure(1); 
+            end
             hold on
             new_P = matched_query_keypoints_i(:,triangulate_mask);
             plot(new_P(2,:), new_P(1, :), 'bo', 'Linewidth', 2);
@@ -164,7 +180,10 @@ else
         assert(size(S.C,2) == size(S.T,2));
         
         fprintf('added new keypoints: %i', size(new_keypoints,2))
+        S.num_added_keypoints = size(new_keypoints,2);
     end
+    
+    
     
 end
 

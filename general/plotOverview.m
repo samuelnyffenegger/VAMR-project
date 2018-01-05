@@ -6,8 +6,10 @@ function plotOverview(query_image, query_keypoints, ...
 
 
 %% calculations 
+run('param.m');
 
-figure(1); clf
+fig1 = figure(1); clf;
+    fig1.Position = full_screen; 
     subplot(2,4,[1,2]); 
         imshow(query_image); hold on;
         plot(query_keypoints(2, :), query_keypoints(1, :), 'rx', 'Linewidth', 2);
@@ -18,7 +20,7 @@ figure(1); clf
         title('Current Image'); 
         
     subplot(2,4,[3,4,7,8]);
-        only_plot_landmarks_near_centre = true;
+        only_plot_landmarks_near_centre = false;
         frame_size = 2;
         if only_plot_landmarks_near_centre
             max_visual_distance = 25;
