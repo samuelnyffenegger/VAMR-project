@@ -121,25 +121,41 @@ end
 %     initialization_patch_matching(img1, img2, K);
         
 % initialization KLT
-[inlier_query_keypoints, corresponding_landmarks, M_W_C2] = ...
+[inlier_query_keypoints, corresponding_landmarks, T_W_C2] = ...
   initialization_KLT(img1, img2, K);
-M_W_C2
+T_W_C2
 
 %% Continuous operation
+run('param.m');
+
 range = (bootstrap_frames(2)+1):last_frame;
 prev_S = struct('P',[],'X',[],'C',[],'F',[],'T',[]); 
 prev_S.P = inlier_query_keypoints;
 prev_S.X = corresponding_landmarks;
+prev_S.num_tracked_keypoints = size(inlier_query_keypoints,2);
+prev_S.num_added_keypoints = 0; 
 
-figure(1);
-% plot initial landmarks
-scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'b');
-set(gcf, 'GraphicsSmoothing', 'on');
-view(0,0);
-axis equal;
-axis vis3d;
-axis([-20 100 -10 5 -10 60]);
+if plot_tracking && do_plotting
+    if plot_on_one_figure
+        fig1 = figure(1); 
+        fig1.Position = full_screen; 
+        subplot(2,4,[3,4,7,8]);
+    else
+        figure(1); 
+    end
+    % plot initial landmarks
+    scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'b');
+    set(gcf, 'GraphicsSmoothing', 'on');
+    view(0,0);
+    axis equal;
+    axis vis3d;
+    axis(axis_array);
+    title('Trajectory of last 20 frames and landmarks (TODO: currently all)')
+end
 
+poses = T_W_C2(:)'; 
+landmarks = corresponding_landmarks; 
+num_keypoints_statistics = [size(corresponding_landmarks,2);0];
 for i = range
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
     if ds == 0
@@ -177,12 +193,27 @@ for i = range
     % do localization and triangulation
     [S, R_C_W, t_C_W] = processFrame(image,prev_image,prev_S, K);
     
-    % plot
-    plot = true;
-    if plot
-        figure(1);
+    % fill the bags for post processing plots
+    T_W_C = [R_C_W', -R_C_W'*t_C_W];
+    if save_in_bags
+        poses = [poses; T_W_C(:)'];
+        landmarks = [landmarks, S.X];
+        num_keypoints_statistics = [num_keypoints_statistics, [S.num_tracked_keypoints; S.num_added_keypoints]];
+    else
+        poses = [poses(end,:); T_W_C(:)'];
+    end
     
-        hold on
+    % plot
+    if plot_landmarks && do_plotting
+        if plot_on_one_figure
+            fig1 = figure(1); 
+            fig1.Position = full_screen; 
+            subplot(2,4,[3,4,7,8]);
+        else
+            figure(2); 
+        end
+
+        hold on; grid on; 
         if all(size(R_C_W) > 0) && all(size(t_C_W) > 0)
             plotCoordinateFrame(R_C_W', -R_C_W'*t_C_W, 2);
             view(0,0);
@@ -198,18 +229,77 @@ for i = range
         view(0,0);
         axis equal;
         axis vis3d;
-        axis([-20 100 -10 5 -10 60]);
+        axis(axis_array);
         end
+        xlabel('x'); ylabel('y'); zlabel('z');
          hold off
     end
+    
+    
+    if plot_on_one_figure && do_plotting
+    
+    if all(size(R_C_W) > 0) && all(size(t_C_W) > 0)
+        figure(1); subplot(2,4,6); hold on; grid on; axis equal;      
+            plot([poses(end-1,10),poses(end,10)],[poses(end-1,12),poses(end,12)],'b.-')
+            title('full trajectory'); axis equal; grid on;
+            xlabel('x'); ylabel('z');
+    end
+
+    figure(1);  subplot(2,4,5); hold on; grid on; 
+        plot([i-1,i],[prev_S.num_tracked_keypoints,S.num_tracked_keypoints],'b.-'); 
+        plot([i-1,i],[prev_S.num_added_keypoints,S.num_added_keypoints],'k.-'); 
+        legend('# tracked KPs', '# added KPs','location','NE');
+        xlabel('iteration');
+        title('keypoints statistics')
+
+    end 
     
     if isempty(t_C_W)
         sprintf('translation is empty. failed to localize.')
     end
 
     % Makes sure that plots refresh.    
-    pause(0.01);
+    % pause(0.01);
 
     prev_img = image;
     prev_S = S;
 end
+fprintf('\ncongratulation!\n')
+
+%% post processing plots 2d
+% ground truth (2d plot)
+fig5 = figure(5); clf;  hold on; zoom on
+    fig5.Position = full_screen;
+    plot(poses(:,10),poses(:,12),'b-*','linewidth',3);
+    axis equal; grid on; xlabel('x'); ylabel('z')
+    plot(landmarks(1,:),landmarks(3,:),'k.','linewidth',0.5)
+    title('estimated ground truth and keypoints')
+    xlabel('x'); ylabel('z');
+
+    
+fig6 = figure(6); clf;  hold on; zoom on
+    fig6.Position = full_screen;
+    set(gca,'Ydir','reverse')
+    plot(poses(:,10),poses(:,11),'b-*','linewidth',3);
+    plot(landmarks(1,:),landmarks(2,:),'k.','linewidth',0.5)
+    title('estimated ground truth and keypoints')
+    axis equal; grid on; xlabel('x'); ylabel('y (watch direction)')
+
+
+fig7 = figure(7); clf;  hold on; grid on; 
+    fig7.Position = full_screen;
+    plot([bootstrap_frames(2),range(1:size(num_keypoints_statistics,2)-1)],num_keypoints_statistics);
+    xlabel('image frame number')
+    legend('# tracked KPs','# added KPs','location','NE'); 
+
+   
+%% post processing plots 3d
+fig8 = figure(8); clf;  hold on; 
+    fig8.Position = full_screen;
+    plot3(poses(:,10),poses(:,11),poses(:,12),'b-*','linewidth',3);
+    axis equal; grid on; xlabel('x'); ylabel('z')
+    plot(landmarks(1,:),landmarks(3,:),'k.','linewidth',0.5)
+    title('estimated ground truth and keypoints')
+    xlabel('x'); ylabel('z');
+
+    
