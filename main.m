@@ -224,7 +224,7 @@ for i = range
         end
         if true
         old_X = intersect(prev_S.X', S.X', 'rows')';
-         scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'b');
+        scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'b');
         set(gcf, 'GraphicsSmoothing', 'on');
         view(0,0);
         axis equal;

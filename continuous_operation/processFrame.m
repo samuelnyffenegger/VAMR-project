@@ -19,8 +19,8 @@ S.P=flipud(P_new(point_validity,:)');
 % plot all matches
 if plot_tracking && do_plotting
     if plot_on_one_figure
-        fig1 = figure(1); 
-        fig1.Position = full_screen; 
+%         fig1 = figure(1); 
+%         fig1.Position = full_screen; 
         subplot(2,4,[1,2]);  
     else
         figure(2); 
@@ -146,11 +146,12 @@ else
          matched_query_keypoints_i = S.C(:,transform_mask);
          S.P = [S.P matched_query_keypoints_i(:,triangulate_mask)];
          
-         if plot_tracking && not(plot_on_one_figure) && do_plotting
+         if plot_tracking && do_plotting
             if plot_on_one_figure
                 fig1 = figure(1); 
                 fig1.Position = full_screen; 
-                subplot(2,4,[3,4,7,8]);
+                % subplot(2,4,[3,4,7,8]);
+                subplot(2,4,[1,2]);
             else
                 figure(1); 
             end

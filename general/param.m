@@ -3,12 +3,12 @@ talkative_initialization = true;
 talkative_cont = true; % TODO: implement this
 talkative_p3p = true;
 
-do_plotting = false;
+do_plotting = true;
 plot_on_one_figure = true; 
 plot_tracking = true;
 plot_landmarks = true;
 
-save_in_bags = false;
+save_in_bags = not(do_plotting);
 
 
 
