@@ -62,7 +62,7 @@ if isempty(prev_S.C)
     S.C = query_keypoints;
     S.F = query_keypoints;
     S.T = repmat(T_C_W, 1, size(query_keypoints,2));
-    S.num_added_keypoints = 0;
+    S.num_tracked_keypoints = 
 
 else
     % track triangulation canditate keypoints

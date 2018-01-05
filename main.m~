@@ -193,7 +193,7 @@ for i = range
     % fill the bags for post processing plots
     T_W_C = [R_C_W', -R_C_W'*t_C_W];
     poses = [poses; T_W_C(:)'];
-    landmarks = [landmarks, S.X];
+    landmarks = [landmarks, ]
     
     % plot
     if plot_landmarks
@@ -223,7 +223,6 @@ for i = range
         axis vis3d;
         axis(axis_array);
         end
-        xlabel('x'); ylabel('y'); zlabel('z');
          hold off
     end
     
@@ -259,13 +258,13 @@ end
 fprintf('\ncongratulation!\n')
 
 %% post processing plots
-% ground truth (2d plot)
-fig5 = figure(5); clf;  hold on; 
-    fig5.Position = full_screen;
+% ground truth
+figure(5); clf;  
     plot(poses(:,10),poses(:,12),'b-*','linewidth',3);
     axis equal; grid on; xlabel('x'); ylabel('z')
-    plot(landmarks(1,:),landmarks(3,:),'k.','linewidth',0.5)
-    title('estimated ground truth and keypoints')
-    xlabel('x'); ylabel('z');
+    title('estimated ground truth')
+
+% keypoints
+
     
     
