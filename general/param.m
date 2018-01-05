@@ -10,8 +10,6 @@ plot_landmarks = true;
 
 save_in_bags = not(do_plotting);
 
-
-
 %% tuning parameters
 % keypoint selection and description
 harris_patch_size = 9;
@@ -39,10 +37,10 @@ max_angle_deg = 2.5*min_angle_deg;
 max_num_tracked_frames = 5; % only this many last frames are tracked. (old ones are not very interesting and slow down computation)
 
 % P3P
-discard_p3p_outliers = true; % why better performance if false?
+discard_p3p_outliers = false; % why better performance if false?
 Ransac_p3p_pixel_tolerance = 5;
 estimate_DLT = false;
-tweaked_for_more = false; % TODO: change this to true
+tweaked_for_more = true; % TODO: change this to true
 
 min_points = 5; % minimum numbers of points required for triangulation
 
@@ -54,10 +52,15 @@ nonmaximum_supression_radius_cont = 8;
 descriptor_radius_cont = 9;
 
 % tracking
-KLT_max_bidirectional_error_cont = 1; 
+KLT_max_bidirectional_error_cont = 1.5; 
 KLT_patch_size_cont = 31; %2*harris_patch_size+1; % default: 31
 KLT_max_iterations_cont = 30; % default: 30
-        
+       
+% bundle adjustment
+window_size = 10;
+max_iters = 20;
+matching_condition_frames = 2; % number of frames that enter into the error function but are not refined
+
 %% dataset specific tuning parameters
 ds = 2;         % dataset - 0: KITTI, 1: Malaga, 2: parking
 switch ds
@@ -71,7 +74,7 @@ switch ds
 
     case 2 % parking parameters
         bootstrap_frames = [1,4]; 
-        bootstrap_frames = [113,116]; 
+        %bootstrap_frames = [113,116]; 
     
     case 3 % alpha & omega
         bootstrap_frames = [5,6];
