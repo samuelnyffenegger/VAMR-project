@@ -17,7 +17,7 @@ S.X=prev_S.X(:, point_validity); % only keep the points that were tracked
 S.P=flipud(P_new(point_validity,:)');
 
 % plot all matches
-if plot_tracking
+if plot_tracking && do_plotting
     if plot_on_one_figure
         fig1 = figure(1); 
         fig1.Position = full_screen; 
@@ -28,7 +28,7 @@ if plot_tracking
     imshow(I); hold on;
     plot(S.P(2, :), S.P(1, :), 'rx', 'Linewidth', 2);
     plotMatches([1:size(S.P,2)], prev_S.P(:,point_validity), S.P, 2, 'g-');
-    pause(0.001);
+    % pause(0.001);
     title('tracked keypoints')
     % hold off
 end
@@ -74,7 +74,7 @@ else
     S.F = prev_S.F(:,p_validity);
     S.T = prev_S.T(:, p_validity); % only keep the points that were tracked
     
-    if plot_tracking && not(plot_on_one_figure)
+    if plot_tracking && not(plot_on_one_figure) && do_plotting
         figure(3);
             imshow(I); hold on;
             plot(S.C(2, :), S.C(1, :), 'rx', 'Linewidth', 2);
@@ -143,7 +143,7 @@ else
          matched_query_keypoints_i = S.C(:,transform_mask);
          S.P = [S.P matched_query_keypoints_i(:,triangulate_mask)];
          
-         if plot_tracking && not(plot_on_one_figure)
+         if plot_tracking && not(plot_on_one_figure) && do_plotting
             if plot_on_one_figure
                 fig1 = figure(1); 
                 fig1.Position = full_screen; 

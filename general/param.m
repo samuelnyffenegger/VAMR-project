@@ -1,8 +1,13 @@
 %% control parameters
 talkative_initialization = true;
 talkative_cont = true; % TODO: implement this
-plot_on_one_figure = true; % TODO: implement this
-plot_landmarks_2d = false; % TODO: implement this
+
+do_plotting = false;
+plot_on_one_figure = true; 
+plot_tracking = false;
+plot_landmarks = false;
+
+
 
 %% tuning parameters
 % keypoint selection and description
@@ -23,8 +28,6 @@ KLT_max_iterations = 60;
 % patch size for KLT is same as harris patch size
 
 %% continuous operation
-plot_tracking = true;
-plot_landmarks = true;
 axis_array = [-40 200 -10 5 -100 100];
 
 % Triangulate new points

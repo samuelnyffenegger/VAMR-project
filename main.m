@@ -126,6 +126,8 @@ end
 T_W_C2
 
 %% Continuous operation
+run('param.m');
+
 range = (bootstrap_frames(2)+1):last_frame;
 prev_S = struct('P',[],'X',[],'C',[],'F',[],'T',[]); 
 prev_S.P = inlier_query_keypoints;
@@ -133,7 +135,7 @@ prev_S.X = corresponding_landmarks;
 prev_S.num_tracked_keypoints = size(inlier_query_keypoints,2);
 prev_S.num_added_keypoints = 0; 
 
-if plot_tracking
+if plot_tracking && do_plotting
     if plot_on_one_figure
         fig1 = figure(1); 
         fig1.Position = full_screen; 
@@ -153,6 +155,7 @@ end
 
 poses = T_W_C2(:)'; 
 landmarks = corresponding_landmarks; 
+num_keypoints_statistics = [size(corresponding_landmarks,2);0];
 for i = range
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
     if ds == 0
@@ -194,9 +197,10 @@ for i = range
     T_W_C = [R_C_W', -R_C_W'*t_C_W];
     poses = [poses; T_W_C(:)'];
     landmarks = [landmarks, S.X];
+    num_keypoints_statistics = [num_keypoints_statistics, [S.num_tracked_keypoints; S.num_added_keypoints]];
     
     % plot
-    if plot_landmarks
+    if plot_landmarks && do_plotting
         if plot_on_one_figure
             fig1 = figure(1); 
             fig1.Position = full_screen; 
@@ -228,7 +232,7 @@ for i = range
     end
     
     
-    if plot_on_one_figure
+    if plot_on_one_figure && do_plotting
     
     if all(size(R_C_W) > 0) && all(size(t_C_W) > 0)
         figure(1); subplot(2,4,6); hold on; grid on; axis equal;      
@@ -251,21 +255,47 @@ for i = range
     end
 
     % Makes sure that plots refresh.    
-    pause(0.01);
+    % pause(0.01);
 
     prev_img = image;
     prev_S = S;
 end
 fprintf('\ncongratulation!\n')
 
-%% post processing plots
+%% post processing plots 2d
 % ground truth (2d plot)
-fig5 = figure(5); clf;  hold on; 
+fig5 = figure(5); clf;  hold on; zoom on
     fig5.Position = full_screen;
     plot(poses(:,10),poses(:,12),'b-*','linewidth',3);
     axis equal; grid on; xlabel('x'); ylabel('z')
     plot(landmarks(1,:),landmarks(3,:),'k.','linewidth',0.5)
     title('estimated ground truth and keypoints')
     xlabel('x'); ylabel('z');
+
     
+fig6 = figure(6); clf;  hold on; zoom on
+    fig6.Position = full_screen;
+    set(gca,'Ydir','reverse')
+    plot(poses(:,10),poses(:,11),'b-*','linewidth',3);
+    plot(landmarks(1,:),landmarks(2,:),'k.','linewidth',0.5)
+    title('estimated ground truth and keypoints')
+    axis equal; grid on; xlabel('x'); ylabel('y (watch direction)')
+
+
+fig7 = figure(7); clf;  hold on; grid on; 
+    fig7.Position = full_screen;
+    plot([bootstrap_frames(2),range(1:size(num_keypoints_statistics,2)-1)],num_keypoints_statistics);
+    xlabel('image frame number')
+    legend('# tracked KPs','# added KPs','location','NE'); 
+
+   
+%% post processing plots 3d
+fig8 = figure(8); clf;  hold on; 
+    fig8.Position = full_screen;
+    plot3(poses(:,10),poses(:,11),poses(:,12),'b-*','linewidth',3);
+    axis equal; grid on; xlabel('x'); ylabel('z')
+    plot(landmarks(1,:),landmarks(3,:),'k.','linewidth',0.5)
+    title('estimated ground truth and keypoints')
+    xlabel('x'); ylabel('z');
+
     
