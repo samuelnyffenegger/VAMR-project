@@ -90,4 +90,8 @@ else % estimate with P3P
     
 end 
 
+if talkative_p3p
+   fprintf('P3P: %2.1f%% inliers. \n',100*sum(best_inlier_mask)/numel(best_inlier_mask)); 
+end
+
 end

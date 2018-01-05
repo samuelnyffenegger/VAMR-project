@@ -1,8 +1,9 @@
 %% control parameters
 talkative_initialization = true;
 talkative_cont = true; % TODO: implement this
+talkative_p3p = true;
 
-do_plotting = true;
+do_plotting = false;
 plot_on_one_figure = true; 
 plot_tracking = true;
 plot_landmarks = true;
@@ -58,7 +59,7 @@ KLT_patch_size_cont = 31; %2*harris_patch_size+1; % default: 31
 KLT_max_iterations_cont = 30; % default: 30
         
 %% dataset specific tuning parameters
-ds = 0;         % dataset - 0: KITTI, 1: Malaga, 2: parking
+ds = 2;         % dataset - 0: KITTI, 1: Malaga, 2: parking
 switch ds
     case 0 % Kitti parameters
         bootstrap_frames = [0,2]; 
