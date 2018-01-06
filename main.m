@@ -157,9 +157,13 @@ poses = T_W_C2(:)';
 landmarks = corresponding_landmarks; 
 num_keypoints_statistics = [size(corresponding_landmarks,2);0];
 
+% BA variables
 states_BA = [];
 poses_BA=zeros(12,window_size);
-index_shift = mod(range(1),window_size)+1;
+states_BA_boundary = [];
+poses_BA_boundary = zeros(12,boundary_window_size);
+index_shift = mod(range(1),window_size);
+
 for i = range
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
     if ds == 0
@@ -198,28 +202,36 @@ for i = range
     [S, R_C_W, t_C_W] = processFrame(image,prev_image,prev_S, K);
     T_W_C = [R_C_W', -R_C_W'*t_C_W];
     
-    if i > range(1) % skip first image
-        frame_number = mod(i-index_shift,window_size)+1; % 1 <= frame_number <= window size
-        states_BA = [states_BA S];
-        poses_BA(:,frame_number) = T_W_C(:);
 
-        % bundle adjustment after end of window
-        if mod(frame_number,window_size) == 0
-            %convert data format    
-            [hidden_state, observations] = getBAFormat(states_BA, poses_BA);
-                
-            % execute BA
-            hidden_state_opt = runBA(hidden_state,observations,K);
-            
-            % convert back to standard representation
-            [T_W_Cs, states_refined] = getStandardFormat(hidden_state_opt, observations, states_BA, window_size);
-            S = states_refined(end); % set optimized frame as current frame
-            T_W_C = reshape(T_W_Cs(:,end),3,4);
-            
-            states_BA = [];
-            poses_BA=zeros(12,window_size);
+    frame_number = mod(i-index_shift,window_size)+1; % 1 <= frame_number <= window size
+    states_BA = [states_BA S];
+    poses_BA(:,frame_number) = T_W_C(:);
+
+    % bundle adjustment after end of window
+    if mod(frame_number,window_size) == 0
+        %convert data format of states to be optimized  
+        [hidden_state, observations] = getBAFormat(states_BA, poses_BA);
+
+        % convert boundary frames
+        if isempty(states_BA_boundary)
+            [hidden_state_boundary, observations_boundary] = getBAFormat(states_BA_boundary, poses_BA_boundary);
+        else
+            hidden_state_boundary = [];
+            observations_boundary = [];
         end
-    
+        
+        % execute BA
+        hidden_state_opt = runBAWindow(hidden_state,observations, hidden_state_boundary, observations_boundary, K, max_iters);
+
+        % convert back to standard representation
+        [T_W_Cs, states_refined] = getStandardFormat(hidden_state_opt, observations, states_BA, window_size);
+        S = states_refined(end); % set optimized frame as current frame
+        T_W_C = reshape(T_W_Cs(:,end),3,4);
+
+        states_BA_boundary = states_BA(end-boundary_window_size+1:end)
+        poses_BA_boundary = poses_BA(:,end-boundary_window_size+1:end)
+        states_BA = [];
+        poses_BA=zeros(12,window_size);
     end
     % fill the bags for post processing plots
     if save_in_bags
