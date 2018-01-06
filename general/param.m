@@ -64,7 +64,7 @@ KLT_max_iterations_cont = 30; % default: 30
 axis_array = [-40 200 -10 5 -100 100];
 
 %% dataset specific tuning parameters
-ds = 1;         % dataset - 0: KITTI, 1: Malaga, 2: parking, 
+ds = 2;         % dataset - 0: KITTI, 1: Malaga, 2: parking, 
 
 switch ds
     case 0 % Kitti parameters
@@ -116,6 +116,8 @@ switch ds
         KLT_max_bidirectional_error_cont = 10; 
         KLT_patch_size_cont = 31; %2*harris_patch_size+1; % default: 31
         KLT_max_iterations_cont = 30; % default: 30
+        
+        last_frame
                 
     case 1 % Malaga parameters
 %% tuning parameters malaga

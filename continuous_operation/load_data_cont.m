@@ -1,0 +1,33 @@
+function [prev_image, image] = load_data_cont(i, ds_path, left_images)
+    run('param.m');
+
+    if ds == 0
+        image = imread([ds_path '/00/image_0/' sprintf('%06d.png',i)]);
+        prev_image = imread([ds_path '/00/image_0/' sprintf('%06d.png',i-frame_step_size)]);
+    elseif ds == 1
+        image = rgb2gray(imread([ds_path ...
+            '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
+            left_images(i).name]));
+        prev_image = rgb2gray(imread([ds_path ...
+            '/malaga-urban-dataset-extract-07_rectified_800x600_Images/' ...
+            left_images(i-frame_step_size).name]));
+    elseif ds == 2
+        image = im2uint8(rgb2gray(imread([ds_path ...
+            sprintf('/images/img_%05d.png',i)])));
+        prev_image = im2uint8(rgb2gray(imread([ds_path ...
+            sprintf('/images/img_%05d.png',i-frame_step_size)])));
+    elseif ds == 5
+        image = rgb2gray(imread([ds_path ...
+            sprintf('%05d.JPG',i)]));
+        prev_image = rgb2gray(imread([ds_path ...
+            sprintf('%05d.JPG',i-frame_step_size)]));
+    elseif ds == 6
+        image = rgb2gray(imread([ds_path ...
+            sprintf('%05d.JPG',i)]));
+        prev_image = rgb2gray(imread([ds_path ...
+            sprintf('%05d.JPG',i-frame_step_size)]));
+    else
+        assert(false);
+    end
+    
+end
