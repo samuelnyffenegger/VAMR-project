@@ -18,6 +18,8 @@ S.P=flipud(P_new(point_validity,:)');
 
 % plot all matches
 if do_plotting
+    % if sliding_window_plots; clf; end
+    
     subplot(2,4,[1,2]);  
     imshow(I); hold on;
     plot(S.P(2, :), S.P(1, :), 'rx', 'Linewidth', 2);
