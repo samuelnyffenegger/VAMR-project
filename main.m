@@ -12,8 +12,7 @@ run('param.m');
 [img1, img2, K, last_frame, ground_truth, ds_path, left_images] = load_data_init();
         
 % initialization KLT
-[inlier_query_keypoints, corresponding_landmarks, T_W_C2] = ...
-  initialization_KLT(img1, img2, K);
+[inlier_query_keypoints, corresponding_landmarks, T_W_C2] = initialization_KLT(img1, img2, K);
 
 
 %% Continuous operation
@@ -50,8 +49,6 @@ for i = range
    
     % do localization and triangulation
     [S, R_C_W, t_C_W] = processFrame(image,prev_image,prev_S, K);
-    
-    if isempty(t_C_W); fprintf('translation is empty. failed to localize.'); end
         
     % fill the bags for post processing plots
     T_W_C = [R_C_W', -R_C_W'*t_C_W];
