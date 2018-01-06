@@ -11,12 +11,12 @@ sliding_window_plots_number = 5;
 
 save_in_bags = not(do_plotting);
 
-
 %% tuning parameters (tmp, should be overwritten)
 % keypoint selection and description
 harris_patch_size = 9;
 harris_kappa = 0.08;
 num_keypoints = 500; 
+
 nonmaximum_supression_radius = 10;
 descriptor_radius = 9;
 match_lambda = 10;
@@ -40,25 +40,33 @@ max_num_tracked_frames = 5; % only this many last frames are tracked. (old ones 
 
 % P3P with RANSAC
 discard_p3p_outliers = true; % why better performance if false?
-Ransac_p3p_pixel_tolerance = 5;
+Ransac_p3p_pixel_tolerance = 2;
 estimate_DLT = false;
 tweaked_for_more = false; % TODO: change this to true
+
+%triangulation
 min_points = 5; % minimum numbers of points required for triangulation
 
 % parameters harris
 harris_patch_size_cont = 9;
 harris_kappa_cont = 0.08;
-num_keypoints_cont = 300;
+num_keypoints_cont = 500;
 nonmaximum_supression_radius_cont = 8;
 descriptor_radius_cont = 9;
 
 % tracking
-KLT_max_bidirectional_error_cont = 1; 
+KLT_max_bidirectional_error_cont = 1.5; 
 KLT_patch_size_cont = 31; %2*harris_patch_size+1; % default: 31
 KLT_max_iterations_cont = 30; % default: 30
         
 % tmp (should be overwritten)
 axis_array = [-40 200 -10 5 -100 100];
+       
+% bundle adjustment
+do_bundle_adjustment = true;
+window_size = 10;
+max_iters = 20;
+boundary_window_size = 3;% must be smaller than window_size. provide "matching condition"
 
 %% dataset specific tuning parameters
 ds = 2;         % dataset - 0: KITTI, 1: Malaga, 2: parking, 
@@ -164,9 +172,6 @@ KLT_max_bidirectional_error_cont = 10;
 KLT_patch_size_cont = 31; %2*harris_patch_size+1; % default: 31
 KLT_max_iterations_cont = 30; % default: 30
 
-
-
-
 if bootstrap_frames(1) < 2;  warning('bootstrap_frames index for malaga starting with 2'); end
 
     case 2 % parking parameters
@@ -217,7 +222,6 @@ if bootstrap_frames(1) < 2;  warning('bootstrap_frames index for malaga starting
         KLT_patch_size_cont = 31; %2*harris_patch_size+1; % default: 31
         KLT_max_iterations_cont = 30; % default: 30
         
-           
     case 3 % alpha & omega
         bootstrap_frames = [5,6];
         
