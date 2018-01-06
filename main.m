@@ -113,7 +113,7 @@ else
     assert(false);
 end
 
-
+%
 % %% initialization patch matching
 % [inlier_query_keypoints, corresponding_landmarks, M_W_C2] = ...
 %     initialization_patch_matching(img1, img2, K);
@@ -242,19 +242,19 @@ for i = range
     
     if plot_on_one_figure && do_plotting
     
-    if all(size(R_C_W) > 0) && all(size(t_C_W) > 0)
-        figure(1); subplot(2,4,6); hold on; grid on; axis equal;      
-            plot([poses(end-1,10),poses(end,10)],[poses(end-1,12),poses(end,12)],'b.-')
-            title('full trajectory'); axis equal; grid on;
-            xlabel('x'); ylabel('z');
-    end
+        if all(size(R_C_W) > 0) && all(size(t_C_W) > 0)
+            figure(1); subplot(2,4,6); hold on; grid on; axis equal;      
+                plot([poses(end-1,10),poses(end,10)],[poses(end-1,12),poses(end,12)],'b.-')
+                title('full trajectory'); axis equal; grid on;
+                xlabel('x'); ylabel('z');
+        end
 
-    figure(1);  subplot(2,4,5); hold on; grid on; 
-        plot([i-1,i],[prev_S.num_tracked_keypoints,S.num_tracked_keypoints],'b.-'); 
-        plot([i-1,i],[prev_S.num_added_keypoints,S.num_added_keypoints],'k.-'); 
-        legend('# tracked KPs', '# added KPs','location','NE');
-        xlabel('iteration');
-        title('keypoints statistics')
+        figure(1);  subplot(2,4,5); hold on; grid on; 
+            plot([i-frame_step_size,i],[prev_S.num_tracked_keypoints,S.num_tracked_keypoints],'b.-'); 
+            plot([i-frame_step_size,i],[prev_S.num_added_keypoints,S.num_added_keypoints],'k.-'); 
+            legend('# tracked KPs', '# added KPs','location','NE');
+            xlabel('iteration');
+            title('keypoints statistics')
 
     end 
     

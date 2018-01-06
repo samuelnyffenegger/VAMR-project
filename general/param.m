@@ -62,7 +62,7 @@ KLT_max_iterations_cont = 30; % default: 30
 axis_array = [-40 200 -10 5 -100 100];
 
 %% dataset specific tuning parameters
-ds = 5;         % dataset - 0: KITTI, 1: Malaga, 2: parking, 
+ds = 1;         % dataset - 0: KITTI, 1: Malaga, 2: parking, 
 
 switch ds
     case 0 % Kitti parameters
@@ -116,7 +116,57 @@ switch ds
         KLT_max_iterations_cont = 30; % default: 30
                 
     case 1 % Malaga parameters
-        bootstrap_frames = [0,2]; 
+%% tuning parameters malaga
+bootstrap_frames = [2,4]; axis_array = [-100 20 -10 10 -30 50]; 
+
+% keypoint selection and description
+harris_patch_size = 9;
+harris_kappa = 0.08;
+num_keypoints = 300; %500; 
+nonmaximum_supression_radius = 10;
+descriptor_radius = 9;
+match_lambda = 10;
+
+% 8 point with RANSAC 
+pixel_tolerance_8point_RANSAC = 3; 
+n_iterations_8point_RANSAC = 50; 
+
+% KLT with RANSAC
+max_bidirectional_error = 1;
+KLT_max_iterations = 60;
+% patch size for KLT is same as harris patch size
+
+% continuous operation
+frame_step_size = 2; 
+
+% Triangulate new points (continous operation)
+min_angle_deg = 0.5; % angle between camera views to allow triangulation
+max_angle_deg = 2.5*min_angle_deg; 
+max_num_tracked_frames = 5; % only this many last frames are tracked. (old ones are not very interesting and slow down computation)
+
+% P3P with RANSAC
+discard_p3p_outliers = true; 
+Ransac_p3p_pixel_tolerance = 20; %5;
+estimate_DLT = false;
+tweaked_for_more = false; % TODO: change this to true
+min_points = 5; % minimum numbers of points required for triangulation
+
+% parameters harris
+harris_patch_size_cont = 9;
+harris_kappa_cont = 0.08;
+num_keypoints_cont = 300; 
+nonmaximum_supression_radius_cont = 8;
+descriptor_radius_cont = 9;
+
+% tracking
+KLT_max_bidirectional_error_cont = 10; 
+KLT_patch_size_cont = 31; %2*harris_patch_size+1; % default: 31
+KLT_max_iterations_cont = 30; % default: 30
+
+
+
+
+if bootstrap_frames(1) < 2;  warning('bootstrap_frames index for malaga starting with 2'); end
 
     case 2 % parking parameters
         %% tuning parameters parking
@@ -175,55 +225,55 @@ switch ds
         
     case 5 % duckietown, set 1
         
-%% tuning parameters duckietown
-% bootstrap_frames = [266,286]; axis_array =  [-40 40 -10 10 -25 125];
-% bootstrap_frames = [354,355]; % motion blurr
-% bootstrap_frames = [587,590]; axis_array = [-40 40 -10 10 -25 125];
-bootstrap_frames = [1111,1113]; axis_array = [-40 40 -10 10 -25 125];
+        %% tuning parameters duckietown
+        % bootstrap_frames = [266,286]; axis_array =  [-40 40 -10 10 -25 125];
+        % bootstrap_frames = [354,355]; % motion blurr
+        % bootstrap_frames = [587,590]; axis_array = [-40 40 -10 10 -25 125];
+        bootstrap_frames = [1111,1113]; axis_array = [-40 40 -10 10 -25 125];
 
-% keypoint selection and description
-harris_patch_size = 9;
-harris_kappa = 0.08;
-num_keypoints = 300; %500; 
-nonmaximum_supression_radius = 10;
-descriptor_radius = 9;
-match_lambda = 10;
+        % keypoint selection and description
+        harris_patch_size = 9;
+        harris_kappa = 0.08;
+        num_keypoints = 300; %500; 
+        nonmaximum_supression_radius = 10;
+        descriptor_radius = 9;
+        match_lambda = 10;
 
-% 8 point with RANSAC 
-pixel_tolerance_8point_RANSAC = 3; 
-n_iterations_8point_RANSAC = 50; 
+        % 8 point with RANSAC 
+        pixel_tolerance_8point_RANSAC = 3; 
+        n_iterations_8point_RANSAC = 50; 
 
-% KLT with RANSAC
-max_bidirectional_error = 1;
-KLT_max_iterations = 60;
-% patch size for KLT is same as harris patch size
+        % KLT with RANSAC
+        max_bidirectional_error = 1;
+        KLT_max_iterations = 60;
+        % patch size for KLT is same as harris patch size
 
-% continuous operation
-frame_step_size = 5; 
+        % continuous operation
+        frame_step_size = 5; 
 
-% Triangulate new points (continous operation)
-min_angle_deg = 3; % angle between camera views to allow triangulation
-max_angle_deg = 2.5*min_angle_deg; 
-max_num_tracked_frames = 5; % only this many last frames are tracked. (old ones are not very interesting and slow down computation)
+        % Triangulate new points (continous operation)
+        min_angle_deg = 3; % angle between camera views to allow triangulation
+        max_angle_deg = 2.5*min_angle_deg; 
+        max_num_tracked_frames = 5; % only this many last frames are tracked. (old ones are not very interesting and slow down computation)
 
-% P3P with RANSAC
-discard_p3p_outliers = true; 
-Ransac_p3p_pixel_tolerance = 10; %5;
-estimate_DLT = false;
-tweaked_for_more = false; % TODO: change this to true
-min_points = 5; % minimum numbers of points required for triangulation
+        % P3P with RANSAC
+        discard_p3p_outliers = true; 
+        Ransac_p3p_pixel_tolerance = 10; %5;
+        estimate_DLT = false;
+        tweaked_for_more = false; % TODO: change this to true
+        min_points = 5; % minimum numbers of points required for triangulation
 
-% parameters harris
-harris_patch_size_cont = 9;
-harris_kappa_cont = 0.08;
-num_keypoints_cont = 300; 
-nonmaximum_supression_radius_cont = 8;
-descriptor_radius_cont = 9;
+        % parameters harris
+        harris_patch_size_cont = 9;
+        harris_kappa_cont = 0.08;
+        num_keypoints_cont = 300; 
+        nonmaximum_supression_radius_cont = 8;
+        descriptor_radius_cont = 9;
 
-% tracking
-KLT_max_bidirectional_error_cont = 10; 
-KLT_patch_size_cont = 31; %2*harris_patch_size+1; % default: 31
-KLT_max_iterations_cont = 30; % default: 30
+        % tracking
+        KLT_max_bidirectional_error_cont = 10; 
+        KLT_patch_size_cont = 31; %2*harris_patch_size+1; % default: 31
+        KLT_max_iterations_cont = 30; % default: 30
         
     case 6 % duckietown, set 2
         bootstrap_frames = [404,408];
