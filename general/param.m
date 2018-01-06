@@ -5,7 +5,7 @@ talkative_optimization = false;
 
 do_plotting = true;
 sliding_window_plots = true; % for keypoint statistics and landmarks
-sliding_window_plots_number = 5;
+sliding_window_plots_number = 20;
 
 % early_stopping = 0; %100; % stop after 30 frames
 
@@ -69,7 +69,7 @@ max_iters = 20;
 boundary_window_size = 3;% must be smaller than window_size. provide "matching condition"
 
 %% dataset specific tuning parameters
-ds = 2;         % dataset - 0: KITTI, 1: Malaga, 2: parking, 
+ds = 0;         % dataset - 0: KITTI, 1: Malaga, 2: parking, 
 
 switch ds
     case 0 % Kitti parameters
@@ -122,7 +122,6 @@ switch ds
         KLT_patch_size_cont = 31; %2*harris_patch_size+1; % default: 31
         KLT_max_iterations_cont = 30; % default: 30
         
-        last_frame
                 
     case 1 % Malaga parameters
 %% tuning parameters malaga

@@ -1,30 +1,8 @@
-function plotOverview_cont(S, prev_S, R_C_W, t_C_W, poses, i)
+function plotOverview_cont(S, prev_S, R_C_W, t_C_W, poses, i,landmarks_container)
 
 run('param.m');
 fig1 = figure(1); 
 fig1.Position = full_screen; 
-
-% 3d landmarks and coordinate frame
-subplot(2,4,[3,4,7,8]); hold on; grid on; 
-    if all(size(R_C_W) > 0) && all(size(t_C_W) > 0)
-        plotCoordinateFrame(R_C_W', -R_C_W'*t_C_W, 2);
-        view(0,0);
-    end
-
-    new_X = setdiff(S.X', prev_S.X', 'rows')';
-    if ~isempty(new_X)
-        scatter3(new_X(1, :), new_X(2, :), new_X(3, :), 5, 'r');
-    end
-
-    old_X = intersect(prev_S.X', S.X', 'rows')';
-    scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'b');
-    set(gcf, 'GraphicsSmoothing', 'on');
-    view(0,0);
-    axis equal;
-    axis vis3d;
-    axis(axis_array);
-    xlabel('x'); ylabel('y'); zlabel('z');
-    hold off
 
 % full trajectory
 figure(1); subplot(2,4,6); hold on; grid on; axis equal;      
@@ -42,4 +20,47 @@ subplot(2,4,5); hold on; grid on;
     xlabel('iteration');
     title('keypoints statistics')
 
+% 3d landmarks and coordinate frame
+sp2 = subplot(2,4,[3,4,7,8]); hold on; grid on;
+    if sliding_window_plots
+        delete(sp2);
+        sp2 = subplot(2,4,[3,4,7,8]); hold on; grid on;
+        for i = 1:min(sliding_window_plots_number,size(poses,1))
+            % landmarks
+            X = landmarks_container{i};
+            if ~isempty(X)
+                scatter3(X(1,:), X(2,:), X(3,:), 5, 'k'); 
+            end
+            set(gcf, 'GraphicsSmoothing', 'on'); view(0,0);
+            axis equal; axis vis3d;
+            xlabel('x'); ylabel('y'); zlabel('z');
+            title('Trajectory of last 20 frames and landmarks')
+            
+            % frame
+            T_W_C = reshape(poses(i,:),3,4);
+            R_W_C = T_W_C(1:3,1:3); t_W_C = T_W_C(1:3,4);
+            T_C_W = [R_W_C', -R_W_C'*t_W_C];
+            R_C_W = T_C_W(1:3,1:3); t_C_W = T_C_W(1:3,4);
+            plotCoordinateFrame(R_C_W', -R_C_W'*t_C_W, 2);
+            view([0,0]);
+            position_cam = -R_C_W'*t_C_W; 
+            axis([position_cam(1)-20, position_cam(1)+20, ...
+                  position_cam(2)-10, position_cam(2)+10,...
+                  position_cam(3)-20, position_cam(3)+40])
+            
+        end
+    else
+        if all(size(R_C_W) > 0) && all(size(t_C_W) > 0)
+            plotCoordinateFrame(R_C_W', -R_C_W'*t_C_W, 2);
+%            view(0,0);
+        end
+
+        new_X = setdiff(S.X', prev_S.X', 'rows')';
+        if ~isempty(new_X)
+            scatter3(new_X(1, :), new_X(2, :), new_X(3, :), 5, 'b');
+        end
+
+        scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'k');
+    end
+    
 end

@@ -34,6 +34,7 @@ if do_plotting
         scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'b');
         set(gcf, 'GraphicsSmoothing', 'on'); view(0,0);
         axis equal; axis vis3d; axis(axis_array);
+        xlabel('x'); ylabel('y'); zlabel('z');
         title('Trajectory of last 20 frames and landmarks (TODO: currently all)')
 end
 
@@ -50,8 +51,12 @@ poses_BA_boundary = [];
 index_shift = mod(range(1),window_size)+boundary_window_size;
 states_refined_all = [];
 T_W_Cs_all = [];
+
+for j=1:sliding_window_plots_number; landmarks_container{j} = []; end
+
 for i = range
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
+    % if sliding_window_plots; figure(1); clf; end
     
     % load images
     [prev_image, image] = load_data_cont(i, ds_path, left_images);
@@ -128,13 +133,25 @@ for i = range
         poses = [poses(max(1,end-sliding_window_plots_number+2):end,:); T_W_C(:)'];
     end
     
+    if sliding_window_plots
+        for j = sliding_window_plots_number:-1:2
+            landmarks_container{j} = landmarks_container{j-1};
+        end       
+        landmarks_container{1} = prev_S.X;
+    else
+        landmarks_container = [];
+    end
+    
     % plot stuff
     if do_plotting
-        plotOverview_cont(S, prev_S, R_C_W, t_C_W, poses, i);
+        plotOverview_cont(S, prev_S, R_C_W, t_C_W, poses, i, landmarks_container);
     end
     
     % prepare for next iteration
     prev_img = image;
     prev_S = S;    
+     
+    pause(0.001);
+
 end
 fprintf('\ncongratulation!\n')
