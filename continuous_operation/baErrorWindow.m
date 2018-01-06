@@ -1,4 +1,4 @@
-function error_terms = baErrorWindow(hidden_state, observations, poses_boundary, K)
+function error_terms = baErrorWindow(hidden_state, observations, poses_boundary, all_landmarks,state_landmark_ids, K)
 % Given hidden_state and observations encoded as explained in the problem
 % statement (and the projection matrix K), return a 2xN matrix
 % containing all reprojection errors.
@@ -14,8 +14,10 @@ num_frames_window = num_frames_all - num_frames_boundary;
 
 T_W_C = reshape(hidden_state(1:num_frames_window*6), 6, []);
 T_W_C_boundary = reshape(poses_boundary, 6,[]);
-p_W_landmarks = reshape(hidden_state(num_frames_window*6+1:end), 3, []);
+landmarks_state = reshape(hidden_state(num_frames_window*6+1:end), 3, []);
 
+p_W_landmarks = all_landmarks;
+p_W_landmarks(:,state_landmark_ids) = landmarks_state;
 
 error_terms = [];
 % Iterator into the observations that are encoded as explained in the 

@@ -1,11 +1,11 @@
-function [T_W_Cs, states_refined] = getStandardFormat(hidden_state_optimized, observations_original, states_original, num_frames)
+function [T_W_Cs, states_refined] = getStandardFormat(hidden_state_optimized, observations_original, all_landmarks, state_landmark_ids, states_original, num_frames)
 
 twists = reshape(hidden_state_optimized(1:num_frames*6), 6, []);
-landmarks = reshape(hidden_state_optimized(num_frames*6+1:end), 3, []);
+landmarks_refined = reshape(hidden_state_optimized(num_frames*6+1:end), 3, []);
+all_landmarks_refined = all_landmarks;
+all_landmarks_refined(:,state_landmark_ids) = landmarks_refined;
 
 ptr_ki = 3; % points to first element of landmarks
-n = observations_original(1);
-m = observations_original(2);
 
 T_W_Cs = zeros(12,num_frames);
 states_refined = [];
@@ -21,7 +21,7 @@ for i = 1:num_frames
     
     % get refined landmarks
     S = states_original(i);
-    S.X = landmarks(:,landmark_ids);
+    S.X = all_landmarks_refined(:,landmark_ids);
     assert(size(S.X,2) == size(S.P,2))
     
     states_refined = [states_refined S];

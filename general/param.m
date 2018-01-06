@@ -3,7 +3,7 @@ talkative_initialization = true;
 talkative_cont = true; % TODO: implement this
 talkative_p3p = true;
 
-do_plotting = true;
+do_plotting = false;
 plot_on_one_figure = true; 
 plot_tracking = true;
 plot_landmarks = true;
@@ -14,7 +14,7 @@ save_in_bags = not(do_plotting);
 % keypoint selection and description
 harris_patch_size = 9;
 harris_kappa = 0.08;
-num_keypoints = 500; %better tracking implemented (KLT and non max supp)
+num_keypoints = 700; %better tracking implemented (KLT and non max supp)
 nonmaximum_supression_radius = 10;
 descriptor_radius = 9;
 match_lambda = 10;
@@ -37,8 +37,8 @@ max_angle_deg = 2.5*min_angle_deg;
 max_num_tracked_frames = 5; % only this many last frames are tracked. (old ones are not very interesting and slow down computation)
 
 % P3P
-discard_p3p_outliers = false; % why better performance if false?
-Ransac_p3p_pixel_tolerance = 5;
+discard_p3p_outliers = true; % why better performance if false?
+Ransac_p3p_pixel_tolerance = 2;
 estimate_DLT = false;
 tweaked_for_more = true; % TODO: change this to true
 
@@ -47,7 +47,7 @@ min_points = 5; % minimum numbers of points required for triangulation
 % parameters harris
 harris_patch_size_cont = 9;
 harris_kappa_cont = 0.08;
-num_keypoints_cont = 300;
+num_keypoints_cont = 500;
 nonmaximum_supression_radius_cont = 8;
 descriptor_radius_cont = 9;
 
@@ -57,9 +57,9 @@ KLT_patch_size_cont = 31; %2*harris_patch_size+1; % default: 31
 KLT_max_iterations_cont = 30; % default: 30
        
 % bundle adjustment
-window_size = 10;
+window_size = 4;
 max_iters = 20;
-matching_condition_frames = 2; % number of frames that enter into the error function but are not refined
+boundary_window_size = 2;% must be smaller than window_size
 
 %% dataset specific tuning parameters
 ds = 2;         % dataset - 0: KITTI, 1: Malaga, 2: parking

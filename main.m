@@ -222,13 +222,14 @@ for i = range
     % bundle adjustment after end of window
     if mod(frame_number,window_size) == 0
         %convert data format of states to be optimized  
-        [hidden_state, observations,poses_boundary, num_boundary_observations] = getBAFormat(states_BA, states_BA_boundary, poses_BA, poses_BA_boundary);
+        [hidden_state, observations, poses_boundary, all_landmarks, state_landmark_ids, num_boundary_observations] =...
+            getBAFormat(states_BA, states_BA_boundary, poses_BA, poses_BA_boundary);
         
         % execute BA
-        hidden_state_opt = runBAWindow(hidden_state,observations, poses_boundary, num_boundary_observations, K, max_iters);
+        hidden_state_opt = runBAWindow(hidden_state,observations, poses_boundary, all_landmarks, state_landmark_ids, num_boundary_observations, K, max_iters);
 
         % convert back to standard representation
-        [T_W_Cs, states_refined] = getStandardFormat(hidden_state_opt, observations, states_BA, window_size);
+        [T_W_Cs, states_refined] = getStandardFormat(hidden_state_opt, observations,all_landmarks,state_landmark_ids, states_BA, window_size);
         S = states_refined(end); % set optimized frame as current frame
         T_W_C = reshape(T_W_Cs(:,end),3,4); % overwrite last pose with refined one
         
