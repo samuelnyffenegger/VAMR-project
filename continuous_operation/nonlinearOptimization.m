@@ -4,7 +4,7 @@ x_init = HomogMatrix2twist([R_C_W_guess t_C_W_guess; [0 0 0 1]]);
 
 error_terms = @(x) reprojectionError(x, X, P, K);
 options = optimoptions(@lsqnonlin, ...
-    'MaxIter', 20);
+    'MaxIter', 20, 'Display','off');
 
 x_optim = lsqnonlin(error_terms, x_init, [], [], options);
 

@@ -3,16 +3,16 @@ function [hidden_state, observations, poses_boundary, all_landmarks, state_landm
 % T_C_Ws 12xn transform columns
 n_window = size(states,2);
 % collect landmarks and transforms
-states = [states states_boundary]
+states = [states states_boundary];
 n = size(states,2);
 twists = zeros(6*n_window,1);
 poses_boundary = zeros(6*size(T_W_Cs_boundary,2),1);
 X_states = [];
 X_boundary = [];
 
+% go through states (window and boundary) and collect landmarks
 for i = 1:n
     S = states(i);
-    
    if i <= size(T_W_Cs,2)
        X_states = [X_states S.X];
        twist = HomogMatrix2twist([reshape(T_W_Cs(:,i),3,4); 0 0 0 1]);
@@ -24,15 +24,18 @@ for i = 1:n
        poses_boundary((ii-1)*6+1:ii*6) = twist;
    end
 end
+%get unique landmarks in order to assign ID
 X_all = [X_states X_boundary];
 landmarks = unique(X_all', 'rows')';
 
+% get IDs of window states
 X_states_unique = unique(X_states', 'rows')';
 
 [mask, ids_states] = ismember(X_states_unique',landmarks','rows');
 
 m = size(landmarks,2);
 
+% stack information into column vectors as defined in VAMR ex 8
 observations = [n;m];
 num_boundary_observations = 0;
 for i = 1:n

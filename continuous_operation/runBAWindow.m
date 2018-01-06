@@ -20,7 +20,7 @@ if with_pattern
     % Each boundary error term depends only on one or zero landmarks (3 entries).
     pattern = spalloc(num_error_terms_window + num_error_terms_boundary, numel(hidden_state), ...
         num_error_terms_window * 9 + num_error_terms_boundary*3);
-    s_pat = size(pattern)
+    
     % Fill pattern for each frame individually:
     observation_i = 3;  % iterator into serialized observations
     error_i = 1;  % iterating frames, need another iterator for the error
@@ -40,21 +40,23 @@ if with_pattern
             observation_i+2*num_keypoints_in_frame+1:...
             observation_i+3*num_keypoints_in_frame);
         for kp_i = 1:numel(landmark_indices)
+            % can only change landmarks that are visible from the window
+            % states
             if ismember(kp_i, state_landmark_ids)
-            num_non_optimized_before = landmark_indices(kp_i) - find(state_landmark_ids == kp_i);
-            pattern(error_i+(kp_i-1)*2:error_i+kp_i*2-1,...
-                1+num_frames_window*6+(landmark_indices(kp_i)-1-num_non_optimized_before)*3:...
-                num_frames_window*6+(landmark_indices(kp_i)-num_non_optimized_before)*3) = 1;
+                %have to shift id accordingly, since landmarks only visible in
+                %boundary are not changed
+                num_non_optimized_before = landmark_indices(kp_i) - find(state_landmark_ids == kp_i);
+                pattern(error_i+(kp_i-1)*2:error_i+kp_i*2-1,...
+                    1+num_frames_window*6+(landmark_indices(kp_i)-1-num_non_optimized_before)*3:...
+                    num_frames_window*6+(landmark_indices(kp_i)-num_non_optimized_before)*3) = 1;
             end
-            
-        end
-        
+        end        
         observation_i = observation_i + 1 + 3*num_keypoints_in_frame;
         error_i = error_i + 2 * num_keypoints_in_frame;
     end
 end
 
-% Also here, using an external error function for clean code.
+% Use an external error function for clean code.
 error_terms = @(x) baErrorWindow(x, observations, poses_boundary, all_landmarks, state_landmark_ids,K);
 options = optimoptions(@lsqnonlin, 'Display', 'iter', ...
     'MaxIter', max_iters);
@@ -62,6 +64,7 @@ if with_pattern
     options.JacobPattern = pattern;
     options.UseParallel = false;
 end
+% run optimization
 hidden_state = lsqnonlin(error_terms, hidden_state, [], [], options);
 
 end

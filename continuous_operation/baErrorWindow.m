@@ -12,6 +12,8 @@ else
 end
 num_frames_window = num_frames_all - num_frames_boundary;
 
+% bring together, according to their ID, landmarks from hidden state and
+% boundary frames
 T_W_C = reshape(hidden_state(1:num_frames_window*6), 6, []);
 T_W_C_boundary = reshape(poses_boundary, 6,[]);
 landmarks_state = reshape(hidden_state(num_frames_window*6+1:end), 3, []);
@@ -21,7 +23,7 @@ p_W_landmarks(:,state_landmark_ids) = landmarks_state;
 
 error_terms = [];
 % Iterator into the observations that are encoded as explained in the 
-% problem statement.
+% problem statement of VAMR ex8.
 observation_i = 2;
 
 for i = 1:num_frames_all
