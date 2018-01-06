@@ -1,29 +1,37 @@
-function hidden_state = runBA(hidden_state, observations, hidden_state_boundary, observations_boundary, K, max_iters)
+function hidden_state = runBA(hidden_state, observations, poses_boundary, num_boundary_observations, K, max_iters)
 % Update the hidden state, encoded as explained in the problem statement,
 % with 20 bundle adjustment iterations.
 % param matching_observations: these observations enter into error function
 % but cannot be refined
 
-with_pattern = true;
+with_pattern = true; % setting this to false just slows everything down very much
+boundary_window_size = size(poses_boundary,1)/6;
 
 if with_pattern
-    num_frames = observations(1);
-    num_observations = (numel(observations)-2-num_frames)/3;
+    num_frames_window = observations(1)-boundary_window_size;
+    num_frames_all = observations(1);
+    num_observations = (numel(observations)-2-num_frames_all)/3;
+    
     % Factor 2, one error for each x and y direction.
-    num_error_terms = 2 * num_observations;
-    % Each error term will depend on one pose (6 entries) and one landmark
-    % position (3 entries), so 9 nonzero entries per error term:
-    pattern = spalloc(num_error_terms, numel(hidden_state), ...
-        num_error_terms * 9);
+    num_error_terms_window = 2 * (num_observations-num_boundary_observations);
+    num_error_terms_boundary = 2 * num_boundary_observations;
+    % Each window error term will depend on one pose (6 entries) and one landmark
+    % position (3 entries), so 9 nonzero entries per window error term.
+    % Each boundary error term depends only on one landmark (3 entries).
+    pattern = spalloc(num_error_terms_window + num_error_terms_boundary, numel(hidden_state), ...
+        num_error_terms_window * 9 + num_error_terms_boundary*3);
     
     % Fill pattern for each frame individually:
     observation_i = 3;  % iterator into serialized observations
     error_i = 1;  % iterating frames, need another iterator for the error
-    for frame_i = 1:num_frames
+    for frame_i = 1:num_frames_all
         num_keypoints_in_frame = observations(observation_i);
-        % All errors of a frame are affected by its pose.
-        pattern(error_i:error_i+2*num_keypoints_in_frame-1, ...
-            (frame_i-1)*6+1:frame_i*6) = 1;
+        
+        if frame_i <= num_frames_window
+            % All errors of a window frame are affected by its pose.
+            pattern(error_i:error_i+2*num_keypoints_in_frame-1, ...
+                (frame_i-1)*6+1:frame_i*6) = 1;
+        end
         
         % Each error is then also affected by the corresponding landmark.
         landmark_indices = observations(...
@@ -31,19 +39,17 @@ if with_pattern
             observation_i+3*num_keypoints_in_frame);
         for kp_i = 1:numel(landmark_indices)
             pattern(error_i+(kp_i-1)*2:error_i+kp_i*2-1,...
-                1+num_frames*6+(landmark_indices(kp_i)-1)*3:...
-                num_frames*6+landmark_indices(kp_i)*3) = 1;
+                1+num_frames_window*6+(landmark_indices(kp_i)-1)*3:...
+                num_frames_window*6+landmark_indices(kp_i)*3) = 1;
         end
         
         observation_i = observation_i + 1 + 3*num_keypoints_in_frame;
         error_i = error_i + 2 * num_keypoints_in_frame;
     end
-    figure(4);
-    spy(pattern);
 end
 
 % Also here, using an external error function for clean code.
-error_terms = @(hidden_state) baErrorWindow(hidden_state, observations, K);
+error_terms = @(x) baErrorWindow(x, observations, poses_boundary, K);
 options = optimoptions(@lsqnonlin, 'Display', 'iter', ...
     'MaxIter', max_iters);
 if with_pattern

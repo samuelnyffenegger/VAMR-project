@@ -1,21 +1,34 @@
-function error_terms = baErrorWindow(hidden_state, observations, K)
+function error_terms = baErrorWindow(hidden_state, observations, poses_boundary, K)
 % Given hidden_state and observations encoded as explained in the problem
 % statement (and the projection matrix K), return a 2xN matrix
 % containing all reprojection errors.
+plot_BA = false;
 
-plot_debug = false;
+num_frames_all = observations(1);
+if isempty(poses_boundary)
+    num_frames_boundary = 0;
+else 
+    num_frames_boundary = size(poses_boundary,1)/6;
+end
+num_frames_window = num_frames_all - num_frames_boundary;
 
-num_frames = observations(1);
-T_W_C = reshape(hidden_state(1:num_frames*6), 6, []);
-p_W_landmarks = reshape(hidden_state(num_frames*6+1:end), 3, []);
+T_W_C = reshape(hidden_state(1:num_frames_window*6), 6, []);
+T_W_C_boundary = reshape(poses_boundary, 6,[]);
+p_W_landmarks = reshape(hidden_state(num_frames_window*6+1:end), 3, []);
+
 
 error_terms = [];
 % Iterator into the observations that are encoded as explained in the 
 % problem statement.
 observation_i = 2;
 
-for i = 1:num_frames
-    single_T_W_C = twist2HomogMatrix(T_W_C(:, i));
+for i = 1:num_frames_all
+    if i <= num_frames_window
+        single_T_W_C = twist2HomogMatrix(T_W_C(:, i));
+    else
+        ii = i - num_frames_window;
+        single_T_W_C = twist2HomogMatrix(T_W_C_boundary(:, ii));
+    end
     num_frame_observations = observations(observation_i + 1);
     
     keypoints = flipud(reshape(observations(observation_i+2:...
@@ -39,7 +52,7 @@ for i = 1:num_frames
     projections = projectPoints(p_C_L, K);
     
     % Can be used to verify that the projections are reasonable.
-    if plot_debug
+    if plot_BA
         figure(3);
         plot(projections(1, :), projections(2, :), 'x');
         hold on;
