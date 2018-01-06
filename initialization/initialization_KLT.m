@@ -80,8 +80,10 @@ if talkative_initialization
 end
 
 % plot overview
-plotOverview(query_image, query_keypoints, ...
-    tracked_query_keypoints, tracked_database_keypoints, best_inlier_mask, ...
-    corresponding_landmarks, M_W_C2, num_tracked_keypoints, ground_guess)
+if do_plotting
+    plotOverview(query_image, query_keypoints, ...
+        tracked_query_keypoints, tracked_database_keypoints, best_inlier_mask, ...
+        corresponding_landmarks, M_W_C2, num_tracked_keypoints, ground_guess)
+end
 
 end

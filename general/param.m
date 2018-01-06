@@ -4,13 +4,13 @@ talkative_p3p = false;
 talkative_optimization = false; 
 
 do_plotting = true;
-plot_on_one_figure = true; 
-plot_tracking = true;
-plot_landmarks = true;
+% plot_on_one_figure = true; 
+% plot_tracking = true;
+% plot_landmarks = true;
 sliding_window_plots = true; % for keypoint statistics and landmarks
 sliding_window_plots_number = 5;
 
-early_stopping = 0; %100; % stop after 30 frames
+% early_stopping = 0; %100; % stop after 30 frames
 
 save_in_bags = not(do_plotting);
 

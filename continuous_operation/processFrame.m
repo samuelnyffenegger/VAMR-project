@@ -17,20 +17,12 @@ S.X=prev_S.X(:, point_validity); % only keep the points that were tracked
 S.P=flipud(P_new(point_validity,:)');
 
 % plot all matches
-if plot_tracking && do_plotting
-    if plot_on_one_figure
-%         fig1 = figure(1); 
-%         fig1.Position = full_screen; 
-        subplot(2,4,[1,2]);  
-    else
-        figure(2); 
-    end
+if do_plotting
+    subplot(2,4,[1,2]);  
     imshow(I); hold on;
     plot(S.P(2, :), S.P(1, :), 'rx', 'Linewidth', 2);
     plotMatches([1:size(S.P,2)], prev_S.P(:,point_validity), S.P, 2, 'g-');
-    % pause(0.001);
     title('tracked keypoints')
-    % hold off
 end
 
 % localize with P3P and ransac
@@ -76,16 +68,6 @@ else
     S.C = flipud(C_new(p_validity,:)');
     S.F = prev_S.F(:,p_validity);
     S.T = prev_S.T(:, p_validity); % only keep the points that were tracked
-    
-    if plot_tracking && not(plot_on_one_figure) && do_plotting
-        figure(3);
-            imshow(I); hold on;
-            plot(S.C(2, :), S.C(1, :), 'rx', 'Linewidth', 2);
-            plotMatches([1:size(prev_S.C(:,p_validity),2)], prev_S.C(:,p_validity), S.C, 2, 'g-');
-            title('tracked new keypoints')
-            % pause(0.001);
-            hold off
-    end
     
     % only triangulate points that come from the same image. otherwhise
     % this does not make sense
@@ -146,15 +128,8 @@ else
          matched_query_keypoints_i = S.C(:,transform_mask);
          S.P = [S.P matched_query_keypoints_i(:,triangulate_mask)];
          
-         if plot_tracking && do_plotting
-            if plot_on_one_figure
-                fig1 = figure(1); 
-                fig1.Position = full_screen; 
-                % subplot(2,4,[3,4,7,8]);
-                subplot(2,4,[1,2]);
-            else
-                figure(1); 
-            end
+         if do_plotting
+            subplot(2,4,[1,2]);
             hold on
             new_P = matched_query_keypoints_i(:,triangulate_mask);
             plot(new_P(2,:), new_P(1, :), 'bo', 'Linewidth', 2);
