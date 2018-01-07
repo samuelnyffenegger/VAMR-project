@@ -62,18 +62,19 @@ for j=1:sliding_window_plots_number; landmarks_container{j} = []; end
 
 for i = range
     fprintf('\n\nProcessing frame %d\n=====================\n', i);
-    % if sliding_window_plots; figure(1); clf; end
+    updated_BA = false;
     
     % load images
     [prev_image, image] = load_data_cont(i, ds_path, left_images);
    
     % do localization and triangulation
+    tic 
     [S, R_C_W, t_C_W] = processFrame(image,prev_image,prev_S, K);
-    
+    toc
     T_W_C = [R_C_W', -R_C_W'*t_C_W];
     
     if isempty(t_C_W)
-        sprintf('translation is empty. failed to localize.')
+        sprintf('\ntranslation is empty. failed to localize.')
         assert(false)
     end
 
@@ -91,7 +92,8 @@ for i = range
 
         % bundle adjustment after end of window
         if mod(frame_number,window_size) == 0
-            fprintf('executing bundle adjustment')
+            fprintf('executing bundle adjustment\n')
+            tic
             %convert data format of states to be optimized  
             [hidden_state, observations, poses_boundary, all_landmarks, state_landmark_ids, num_boundary_observations] =...
                 getBAFormat(states_BA, states_BA_boundary, poses_BA, poses_BA_boundary);
@@ -114,6 +116,8 @@ for i = range
             poses_BA_boundary = T_W_Cs(:,end-boundary_window_size+1:end);
             states_BA = [];
             poses_BA=zeros(12,window_size);
+            updated_BA=true;
+            toc
         end
     end
     
@@ -137,7 +141,14 @@ for i = range
     
     % plot stuff
     if do_plotting
-        plotOverview_cont(S, prev_S, R_C_W, t_C_W, poses, i, landmarks_container, T_W_Cs_all);
+        fprintf('plotting\n')
+        tic
+        if updated_BA
+            plotOverview_cont(S, prev_S, R_C_W, t_C_W, poses, i, landmarks_container, T_W_Cs_all);
+        else
+            plotOverview_cont(S, prev_S, R_C_W, t_C_W, poses, i, landmarks_container, []);
+        end
+        toc
     end
     
     % prepare for next iteration

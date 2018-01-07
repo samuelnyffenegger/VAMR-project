@@ -19,8 +19,8 @@ S.P=flipud(P_new(point_validity,:)');
 % plot all matches
 if do_plotting
     % if sliding_window_plots; clf; end
-    
-    subplot(2,4,[1,2]);  
+    sb_plt = subplot(2,4,[1,2]); 
+    cla(sb_plt)
     imshow(I); hold on;
     plot(S.P(2, :), S.P(1, :), 'rx', 'Linewidth', 2);
     plotMatches([1:size(S.P,2)], prev_S.P(:,point_validity), S.P, 2, 'g-');
@@ -160,7 +160,7 @@ else
         S.T= [S.T repmat(T_C_W, [1, size(new_keypoints,2)])];
         assert(size(S.C,2) == size(S.T,2));
         
-        fprintf('added new keypoints: %i', size(new_keypoints,2))
+        fprintf('added new keypoints: %i \n', size(new_keypoints,2))
         S.num_added_keypoints = size(new_keypoints,2);
     end
     
