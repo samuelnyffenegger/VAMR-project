@@ -10,8 +10,10 @@ figure(1); subplot(2,4,6); hold on; grid on; axis equal;
         plot([poses(end-1,10),poses(end,10)],[poses(end-1,12),poses(end,12)],'b.-')
         if ~isempty(refined_poses)
             plot(refined_poses(10,:),refined_poses(12,:),'g.-')
+            legend('normal','refined with BA','location','NW')
         end
         title('full trajectory'); axis equal; grid on;
+
         xlabel('x'); ylabel('z');
     end
 

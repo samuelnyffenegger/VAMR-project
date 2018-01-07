@@ -15,7 +15,7 @@ run('param.m');
 [inlier_query_keypoints, corresponding_landmarks, T_W_C2] = initialization_KLT(img1, img2, K);
 
 
-%% Continuous operation
+% Continuous operation
 run('param.m');
 
 % save stuff from initialization
@@ -36,6 +36,12 @@ if do_plotting
         axis equal; axis vis3d; axis(axis_array);
         xlabel('x'); ylabel('y'); zlabel('z');
         title('Trajectory of last 20 frames and landmarks (TODO: currently all)')
+        
+    subplot(2,4,6); hold on; grid on; axis equal;  
+        t_W_C2 = T_W_C2(1:3,4);
+        plot([0,t_W_C2(1)],[0,t_W_C2(3)],'b.-');
+        plot([0,t_W_C2(1)],[0,t_W_C2(3)],'g.-')
+        plot([0,t_W_C2(1)],[0,t_W_C2(3)],'b.-');
 end
 
 % prepare to run loop
