@@ -50,7 +50,7 @@ min_points = 5; % minimum numbers of points required for triangulation
 % parameters harris
 harris_patch_size_cont = 9;
 harris_kappa_cont = 0.08;
-num_keypoints_cont = 500;
+num_keypoints_cont = 600;
 nonmaximum_supression_radius_cont = 8;
 descriptor_radius_cont = 9;
 
@@ -64,8 +64,8 @@ axis_array = [-40 200 -10 5 -100 100];
        
 % bundle adjustment
 do_bundle_adjustment = true;
-window_size = 10;
-max_iters = 20;
+window_size = 20;
+max_iters = 50;
 boundary_window_size = 3;% must be smaller than window_size. provide "matching condition"
 
 %% dataset specific tuning parameters
@@ -100,25 +100,25 @@ switch ds
 
         % Triangulate new points (continous operation)
         min_angle_deg = 0.5; % angle between camera views to allow triangulation
-        max_angle_deg = 2.5*min_angle_deg; 
-        max_num_tracked_frames = 5; % only this many last frames are tracked. (old ones are not very interesting and slow down computation)
+        max_angle_deg = 3; 
+        max_num_tracked_frames = 9; % only this many last frames are tracked. (old ones are not very interesting and slow down computation)
 
         % P3P with RANSAC
         discard_p3p_outliers = true; 
         Ransac_p3p_pixel_tolerance = 20; %5;
         estimate_DLT = false;
         tweaked_for_more = false; % TODO: change this to true
-        min_points = 5; % minimum numbers of points required for triangulation
+        min_points = 2; % minimum numbers of points required for triangulation
 
         % parameters harris
         harris_patch_size_cont = 9;
         harris_kappa_cont = 0.08;
-        num_keypoints_cont = 300; 
+        num_keypoints_cont = 700; 
         nonmaximum_supression_radius_cont = 8;
         descriptor_radius_cont = 9;
 
         % tracking
-        KLT_max_bidirectional_error_cont = 10; 
+        KLT_max_bidirectional_error_cont = 6; 
         KLT_patch_size_cont = 31; %2*harris_patch_size+1; % default: 31
         KLT_max_iterations_cont = 30; % default: 30
         
