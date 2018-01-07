@@ -34,3 +34,13 @@ HOW TO PLAY AROUND
 ###################
 - feel free to change any of the parameters in general/param.m
 - It is also possible to switch on and off different features of the VO pipeline
+
+###################
+SPECIFICATION OF THE MACHINE
+###################
+- Proceccor: 	2.2 GHz Intel Core i7
+- Memory: 	16 GB 1600 MHz DDR3
+- no parallel computing (threads = 1)
+- no GPU computing
+- average computation time per frame = 2 seconds
+
