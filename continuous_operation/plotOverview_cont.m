@@ -4,7 +4,7 @@ run('param.m');
 fig1 = figure(1); 
 fig1.Position = full_screen; 
 
-
+tic
 % full trajectory
 figure(1); subplot(2,4,6); hold on; grid on; axis equal;      
     if all(size(R_C_W) > 0) && all(size(t_C_W) > 0)
@@ -17,8 +17,8 @@ figure(1); subplot(2,4,6); hold on; grid on; axis equal;
 
         xlabel('x'); ylabel('z');
     end
-
-
+toc
+tic
 % keypoints statistics
 subplot(2,4,5); hold on; grid on; 
     plot([i-frame_step_size,i],[prev_S.num_tracked_keypoints,S.num_tracked_keypoints],'b.-'); 
@@ -26,20 +26,21 @@ subplot(2,4,5); hold on; grid on;
     legend('# tracked KPs', '# added KPs','location','NE');
     xlabel('iteration');
     title('keypoints statistics')
-
+toc
 % 3d landmarks and coordinate frame
-
+tic
 sp2 = subplot(2,4,[3,4,7,8]); hold on; grid on;
     if sliding_window_plots
-        delete(sp2);
+        cla(sp2);
         sp2 = subplot(2,4,[3,4,7,8]); hold on; grid on;
         
         X = cell2mat(landmarks_container);
         % landmarks
+        
         if ~isempty(X)
                 scatter3(X(1,:), X(2,:), X(3,:), 5, 'k'); 
         end
-           
+         
         for i = 1:min(sliding_window_plots_number,size(poses,1))
             % camera coordinate frame
             T_W_C = reshape(poses(i,:),3,4);
@@ -49,12 +50,12 @@ sp2 = subplot(2,4,[3,4,7,8]); hold on; grid on;
             
             plotCoordinateFrame(R_C_W', -R_C_W'*t_C_W, 2);
             
-            position_cam = -R_C_W'*t_C_W; 
+            
+        end
+        position_cam = -R_C_W'*t_C_W; 
             axis([position_cam(1)-20, position_cam(1)+20, ...
                   position_cam(2)-10, position_cam(2)+10,...
                   position_cam(3)-20, position_cam(3)+40])
-        end
-        
         view([0,0]);
         %set(gcf, 'GraphicsSmoothing', 'on'); view(0,0);
         axis equal; axis vis3d;
@@ -74,5 +75,5 @@ sp2 = subplot(2,4,[3,4,7,8]); hold on; grid on;
 
         scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'k');
     end
-    
+    toc
 end
