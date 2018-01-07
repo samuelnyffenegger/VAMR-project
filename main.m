@@ -54,7 +54,7 @@ states_BA = [];
 poses_BA=zeros(12,window_size);
 states_BA_boundary = [];
 poses_BA_boundary = [];
-index_shift = mod(range(1),window_size)+boundary_window_size;
+index_shift = mod(range(1),window_size*frame_step_size)+boundary_window_size*frame_step_size;
 states_refined_all = [];
 T_W_Cs_all = [];
 
@@ -80,12 +80,12 @@ for i = range
 
     if do_bundle_adjustment
         % first frames are not optimized but serve as boundary condition
-        if i < range(1)+boundary_window_size
+        if i < range(1)+boundary_window_size*frame_step_size
             frame_number = -1;
             states_BA_boundary = [states_BA_boundary S];
             poses_BA_boundary = [poses_BA_boundary T_W_C(:)];
         else        
-            frame_number = mod(i-index_shift,window_size)+1; % 1 <= frame_number <= window size
+            frame_number = mod(i-index_shift,window_size*frame_step_size)/frame_step_size+1; % 1 <= frame_number <= window size
             states_BA = [states_BA S];
             poses_BA(:,frame_number) = T_W_C(:);
         end
