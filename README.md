@@ -18,7 +18,7 @@ $BASE_DIRECTORY
                 /[this repository]
                 /data
                       /kitti
-                      /malaga
+                      /malaga-urban-dataset-extract-07
                       /parking
 
 Thus the data folder (with this exact name, containing the dataset folders) needs to be on the same level as the folder that contains this readme file.
