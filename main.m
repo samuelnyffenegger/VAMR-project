@@ -85,6 +85,7 @@ for i = range
 
         % bundle adjustment after end of window
         if mod(frame_number,window_size) == 0
+            fprintf('executing bundle adjustment')
             %convert data format of states to be optimized  
             [hidden_state, observations, poses_boundary, all_landmarks, state_landmark_ids, num_boundary_observations] =...
                 getBAFormat(states_BA, states_BA_boundary, poses_BA, poses_BA_boundary);
@@ -103,24 +104,10 @@ for i = range
             T_W_Cs_all = [T_W_Cs_all T_W_Cs];
 
             % reset collectors for BA
-            states_BA_boundary = states_BA(end-boundary_window_size+1:end);
-            poses_BA_boundary = poses_BA(:,end-boundary_window_size+1:end);
+            states_BA_boundary = states_refined(end-boundary_window_size+1:end);
+            poses_BA_boundary = T_W_Cs(:,end-boundary_window_size+1:end);
             states_BA = [];
             poses_BA=zeros(12,window_size);
-        end
-
-        figure(48);
-        hold on;
-        for j=1:size(states_refined_all)
-            S_ref = states_refined(j);    
-            scatter3(S_ref.X(1, :), S_ref.X(2, :), S_ref.X(3, :), 5, 'b');
-            T_W_C_ref = reshape(T_W_Cs_all(:,j),3,4);
-            plotCoordinateFrame(T_W_C_ref(1:3,1:3), T_W_C_ref(1:3,4), 2);
-            hold off;
-            view(0,0);
-            axis equal;
-            axis vis3d;
-            axis(axis_array);
         end
     end
     
@@ -144,7 +131,7 @@ for i = range
     
     % plot stuff
     if do_plotting
-        plotOverview_cont(S, prev_S, R_C_W, t_C_W, poses, i, landmarks_container);
+        plotOverview_cont(S, prev_S, R_C_W, t_C_W, poses, i, landmarks_container, T_W_Cs_all);
     end
     
     % prepare for next iteration

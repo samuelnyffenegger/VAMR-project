@@ -45,7 +45,7 @@ if with_pattern
             if ismember(kp_i, state_landmark_ids)
                 %have to shift id accordingly, since landmarks only visible in
                 %boundary are not changed
-                num_non_optimized_before = landmark_indices(kp_i) - find(state_landmark_ids == kp_i);
+                num_non_optimized_before = landmark_indices(kp_i) - find(state_landmark_ids == landmark_indices(kp_i));
                 pattern(error_i+(kp_i-1)*2:error_i+kp_i*2-1,...
                     1+num_frames_window*6+(landmark_indices(kp_i)-1-num_non_optimized_before)*3:...
                     num_frames_window*6+(landmark_indices(kp_i)-num_non_optimized_before)*3) = 1;
@@ -64,6 +64,7 @@ if with_pattern
     options.JacobPattern = pattern;
     options.UseParallel = false;
 end
+
 % run optimization
 hidden_state = lsqnonlin(error_terms, hidden_state, [], [], options);
 
