@@ -4,21 +4,21 @@ run('param.m');
 fig1 = figure(1); 
 fig1.Position = full_screen; 
 
-tic
 % full trajectory
 figure(1); subplot(2,4,6); hold on; grid on; axis equal;      
     if all(size(R_C_W) > 0) && all(size(t_C_W) > 0)
         plot([poses(end-1,10),poses(end,10)],[poses(end-1,12),poses(end,12)],'b.-')
         if ~isempty(refined_poses)
-            plot(refined_poses(10,:),refined_poses(12,:),'g.-')
-            legend('normal','refined with BA','location','NW')
+            plot(refined_poses(10,:),refined_poses(12,:),'g.-')    
+        end
+        if do_bundle_adjustment
+        legend('normal','refined with BA','location','NW')
         end
         title('full trajectory'); axis equal; grid on;
 
         xlabel('x'); ylabel('z');
     end
-toc
-tic
+
 % keypoints statistics
 subplot(2,4,5); hold on; grid on; 
     plot([i-frame_step_size,i],[prev_S.num_tracked_keypoints,S.num_tracked_keypoints],'b.-'); 
@@ -26,9 +26,9 @@ subplot(2,4,5); hold on; grid on;
     legend('# tracked KPs', '# added KPs','location','NE');
     xlabel('iteration');
     title('keypoints statistics')
-toc
+
 % 3d landmarks and coordinate frame
-tic
+
 sp2 = subplot(2,4,[3,4,7,8]); hold on; grid on;
     if sliding_window_plots
         cla(sp2);
@@ -75,5 +75,5 @@ sp2 = subplot(2,4,[3,4,7,8]); hold on; grid on;
 
         scatter3(prev_S.X(1, :), prev_S.X(2, :), prev_S.X(3, :), 5, 'k');
     end
-    toc
+    
 end
